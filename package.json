@@ -1,0 +1,7 @@
+{
+  "name": "open-demat-admin-bundle",
+  "version": "1.5.1",
+  "devDependencies": {
+    "standard-version": "^9.5.0"
+  }
+}

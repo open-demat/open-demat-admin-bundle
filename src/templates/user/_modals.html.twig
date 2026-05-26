@@ -1,0 +1,206 @@
+{# app_open_demat/admin-bundle/src/templates/user/_modals.html.twig #}
+
+{# ========== MODAL CRÉATION UTILISATEUR ========== #}
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form method="post" action="{{ path('open_demat_admin_user_create') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('create_user') }}">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createUserModalLabel">Créer un utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="create_username" class="form-label">Identifiant (username)</label>
+                        <input type="text" name="username" id="create_username" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="create_email" class="form-label">Email (optionnel)</label>
+                        <input type="email" name="email" id="create_email" class="form-control">
+                    </div>
+
+                    {# Step 1: global roles #}
+                    <div class="mb-3">
+                        <label class="form-label">Rôles globaux</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="create_role_user" value="ROLE_USER" checked>
+                                <label class="form-check-label" for="create_role_user">User</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="create_role_admin" value="ROLE_ADMIN">
+                                <label class="form-check-label" for="create_role_admin">Admin</label>
+                            </div>
+                        </div>
+                        <div class="form-text">Si aucun rôle n’est sélectionné, le serveur remettra ROLE_USER.</div>
+                    </div>
+
+                    {# Step 2: app roles builder #}
+                    <div class="mb-2">
+                        <label class="form-label">Rôles applicatifs</label>
+                        <div class="small text-muted mb-2">
+                            Choisissez une application puis un rôle, cliquez “Ajouter”. Répétez si besoin.
+                        </div>
+
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label small text-muted mb-1">Application</label>
+                                <select class="form-select form-select-sm" id="create_app_select">
+                                    <option value="">— Choisir —</option>
+                                    {% for appKey, list in appRoles %}
+                                        <option value="{{ appKey }}">{{ appKey }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-5">
+                                <label class="form-label small text-muted mb-1">Rôle</label>
+                                <select class="form-select form-select-sm" id="create_app_role_select" disabled>
+                                    <option value="">— Sélectionne une application —</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-3 d-grid">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="create_add_app_role" disabled>
+                                    Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Final roles list (chips) + hidden inputs roles[] #}
+                    <div class="mt-3">
+                        <label class="form-label">Rôles sélectionnés</label>
+                        <div id="create_roles_chips" class="d-flex flex-wrap gap-1"></div>
+                        <div id="create_roles_inputs"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer l’utilisateur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ========== MODALS ÉDITION RÔLES PAR UTILISATEUR ========== #}
+{% for user in users %}
+    <div class="modal fade" id="editRolesModal-{{ user.id }}" tabindex="-1" aria-labelledby="editRolesModalLabel-{{ user.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <form method="post" action="{{ path('open_demat_admin_user_roles_update', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('update_roles_' ~ user.id) }}">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editRolesModalLabel-{{ user.id }}">
+                            Rôles de {{ user.username ?? user.userIdentifier }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="text-muted mb-2">
+                            Modifiez les rôles de cet utilisateur. Les changements peuvent nécessiter une reconnexion.
+                        </p>
+
+                        {% if user.email %}
+                            <p class="mb-3"><strong>Email :</strong> {{ user.email }}</p>
+                        {% endif %}
+
+                        {# Step 1: global roles #}
+                        <div class="mb-3">
+                            <label class="form-label">Rôles globaux</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="edit_role_user_{{ user.id }}"
+                                        value="ROLE_USER"
+                                        {% if 'ROLE_USER' in user.roles %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="edit_role_user_{{ user.id }}">User</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="edit_role_admin_{{ user.id }}"
+                                        value="ROLE_ADMIN"
+                                        {% if 'ROLE_ADMIN' in user.roles %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="edit_role_admin_{{ user.id }}">Admin</label>
+                                </div>
+                            </div>
+                            <div class="form-text">Si aucun rôle n’est sélectionné, le serveur remettra ROLE_USER.</div>
+                        </div>
+
+                        {# Step 2: app roles builder #}
+                        <div class="mb-2">
+                            <label class="form-label">Rôles applicatifs</label>
+                            <div class="small text-muted mb-2">
+                                Choisissez une application puis un rôle, cliquez “Ajouter”. Répétez si besoin.
+                            </div>
+
+                            <div class="row g-2 align-items-end">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small text-muted mb-1">Application</label>
+                                    <select class="form-select form-select-sm" id="edit_app_select_{{ user.id }}">
+                                        <option value="">— Choisir —</option>
+                                        {% for appKey, list in appRoles %}
+                                            <option value="{{ appKey }}">{{ appKey }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-5">
+                                    <label class="form-label small text-muted mb-1">Rôle</label>
+                                    <select class="form-select form-select-sm" id="edit_app_role_select_{{ user.id }}" disabled>
+                                        <option value="">— Sélectionne une application —</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-3 d-grid">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_app_role_{{ user.id }}" disabled>
+                                        Ajouter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Final roles list (chips) + hidden inputs roles[] #}
+                        <div class="mt-3">
+                            <label class="form-label">Rôles sélectionnés</label>
+
+                            <div
+                                id="edit_roles_chips_{{ user.id }}"
+                                class="d-flex flex-wrap gap-1"
+                            ></div>
+
+                            <div id="edit_roles_inputs_{{ user.id }}"></div>
+                        </div>
+
+                        {# Initial roles as JSON for JS #}
+                        <script type="application/json" id="user_roles_json_{{ user.id }}">
+                            {{ user.roles|json_encode|raw }}
+                        </script>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Enregistrer les rôles</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}

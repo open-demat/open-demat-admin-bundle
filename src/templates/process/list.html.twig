@@ -1,0 +1,122 @@
+{# app_open_demat/admin-bundle/src/templates/process/list.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ def.label ?? def.shortName ?? def.key }} — Dossiers{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .admin-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem}
+    .admin-meta{text-align:right;font-size:.875rem;color:var(--muted,#6c757d)}
+    .toolbar{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;justify-content:space-between;margin-bottom:1rem}
+    .toolbar .form-control,.toolbar .form-select{max-width:280px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .badge-lite{font-size:.75rem;border-radius:999px;border:1px solid rgba(0,0,0,.08);background-color:rgba(0,0,0,.03);color:#333}
+    @media (max-width:575.98px){.admin-meta{text-align:left}.toolbar .form-control,.toolbar .form-select{max-width:100%}}
+  </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  {% set label = def.label ?? def.shortName ?? def.key %}
+  {% set fullTable = (def.schema ? def.schema ~ '.' : '') ~ def.table %}
+
+  <div class="admin-header">
+    <div>
+      <h1 class="mb-1">
+        Process <span class="badge-lite px-2 py-1">{{ label }}</span>
+      </h1>
+      <p class="text-muted mb-0">
+        Entity : <span class="mono">{{ def.entityClass }}</span>
+        — <span class="mono">{{ fullTable }}</span>
+      </p>
+    </div>
+    <div class="admin-meta">
+      <div>Total : <strong>{{ items|length }}</strong></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+      <div>
+        <label class="form-label small text-muted mb-1">Recherche</label>
+        <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm"
+               placeholder="ID, statut…">
+      </div>
+
+      <div>
+        <label class="form-label small text-muted mb-1">Statut</label>
+        <input type="text" name="statut" value="{{ statut }}" class="form-control form-control-sm"
+               placeholder="ex: DRAFT, EN_SUIVI…">
+      </div>
+
+      <button class="btn btn-sm btn-outline-secondary" type="submit">Filtrer</button>
+
+      <a class="btn btn-sm btn-outline-primary ms-2"
+         href="{{ path('open_demat_admin_process_new', { key: key|url_encode }) }}">
+        + Nouveau
+      </a>
+
+      <a href="{{ path('open_demat_admin_process_index') }}" class="btn btn-sm btn-outline-secondary ms-2">
+        ← Tous les process
+      </a>
+    </form>
+  </div>
+
+  {# Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <div class="table-responsive shadow-sm bg-white rounded-3">
+    <table class="table table-hover table-sm mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width:70px;">#</th>
+          <th>Statut</th>
+          <th>Créé</th>
+          <th>MAJ</th>
+          <th class="text-end" style="width:220px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for e in items %}
+        <tr>
+          <td class="text-muted small">{{ e.id }}</td>
+          <td><span class="badge-lite px-2 py-1">{{ e.statut ?? '—' }}</span></td>
+          <td class="small">{{ e.createdAt ? e.createdAt|date('d/m/Y H:i') : '—' }}</td>
+          <td class="small">{{ e.updatedAt ? e.updatedAt|date('d/m/Y H:i') : '—' }}</td>
+          <td class="text-end">
+            <div class="d-inline-flex gap-1">
+              <a class="btn btn-sm btn-outline-secondary"
+                 href="{{ path('open_demat_admin_process_edit', { key: key|url_encode, id: e.id }) }}">
+                Modifier
+              </a>
+
+              <form method="post"
+                    action="{{ path('open_demat_admin_process_delete', { key: key|url_encode, id: e.id }) }}"
+                    onsubmit="return confirm('Supprimer #{{ e.id }} ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_process_' ~ key ~ '_' ~ e.id) }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            Aucun dossier.
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

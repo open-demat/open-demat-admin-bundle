@@ -1,0 +1,530 @@
+{# app_open_demat/admin-bundle/src/templates/user/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration des utilisateurs{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .admin-users-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .admin-users-meta {
+      text-align: right;
+      font-size: .875rem;
+      color: var(--muted, #6c757d);
+    }
+
+    .badge-role {
+      font-size: .75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.08);
+      background-color: rgba(0,0,0,.03);
+      color: #333;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+    }
+
+    .badge-role .badge-x {
+      font-size: .9em;
+      line-height: 1;
+      border: 0;
+      background: transparent;
+      padding: 0 .15rem;
+      cursor: pointer;
+      color: inherit;
+      opacity: .75;
+    }
+    .badge-role .badge-x:hover { opacity: 1; }
+
+    [data-role^="ROLE_ADMIN"] {
+      background-color: rgba(228,37,53,.06);
+      border-color: rgba(228,37,53,.4);
+      color: #b51e2a;
+    }
+
+    [data-role^="ROLE_USER"] {
+      background-color: rgba(13,110,253,.06);
+      border-color: rgba(13,110,253,.3);
+      color: #0d6efd;
+    }
+
+    [data-role*="_MANAGER"],
+    [data-role*="_RESP"] {
+      background-color: rgba(255,193,7,.06);
+      border-color: rgba(255,193,7,.4);
+      color: #856404;
+    }
+
+    .table thead th {
+      font-size: .825rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: #6c757d;
+      border-bottom-width: 1px;
+    }
+
+    .user-identifier { font-weight: 600; }
+
+    .user-email {
+      font-size: .875rem;
+      color: #6c757d;
+    }
+
+    .admin-users-toolbar {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .admin-users-toolbar .form-control {
+      max-width: 260px;
+    }
+
+    @media (max-width: 575.98px) {
+      .admin-users-meta { text-align: left; }
+      .admin-users-toolbar .form-control { max-width: 100%; }
+    }
+  </style>
+{% endblock %}
+
+{# -------- Build map "appRoles" from availableRoles -------- #}
+{% set appRoles = {} %}
+{% for r in availableRoles %}
+  {% if r matches '/^ROLE_[A-Z0-9]+_[A-Z0-9_]+$/' and r not in ['ROLE_USER','ROLE_ADMIN'] %}
+    {% set parts = r|split('_') %}
+    {% if parts|length >= 3 %}
+      {% set appKey = parts[1] %}
+      {% set suffix = parts|slice(2)|join('_') %}
+      {% set existing = appRoles[appKey]|default([]) %}
+      {% set appRoles = appRoles|merge({ (appKey): existing|merge([suffix]) }) %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% for k, v in appRoles %}
+  {% set appRoles = appRoles|merge({ (k): v|sort }) %}
+{% endfor %}
+
+{% block body %}
+  <div class="container mt-4">
+
+    <div class="admin-users-header">
+      <div>
+        <h1 class="mb-1">Administration des utilisateurs</h1>
+        <p class="text-muted mb-0">
+          Consultez les comptes, visualisez les rôles et gérez les droits d’accès.
+        </p>
+      </div>
+      <div class="admin-users-meta">
+        <div>
+          Total : <strong>{{ users|length }}</strong> utilisateur{{ users|length > 1 ? 's' : '' }}
+        </div>
+        {% if app.user %}
+          <div class="text-muted">
+            Vous êtes connecté en tant que<br>
+            <strong>{{ app.user.userIdentifier ?? app.user.username }}</strong>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Toolbar : recherche + création + suppression multiple #}
+    <div class="admin-users-toolbar">
+      <div class="d-flex align-items-center gap-2">
+        <form method="get" class="d-flex gap-2">
+          <input
+            type="search"
+            name="q"
+            value="{{ app.request.query.get('q') }}"
+            class="form-control form-control-sm"
+            placeholder="Rechercher un utilisateur…"
+            aria-label="Rechercher par identifiant ou email"
+          >
+          <button class="btn btn-sm btn-outline-secondary" type="submit">
+            <i class="bx bx-search" aria-hidden="true"></i>
+            <span class="d-none d-sm-inline">Rechercher</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button
+          type="submit"
+          form="bulk-delete-form"
+          class="btn btn-sm btn-outline-danger"
+          onclick="return confirm('Supprimer les utilisateurs sélectionnés ? Cette action est irréversible.');"
+        >
+          <i class="bx bx-trash" aria-hidden="true"></i>
+          <span class="ms-1">Supprimer la sélection</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#createUserModal"
+        >
+          <i class="bx bx-user-plus" aria-hidden="true"></i>
+          <span class="ms-1">Créer un utilisateur</span>
+        </button>
+
+        <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+          ← Retour au dashboard
+        </a>
+      </div>
+    </div>
+
+    {# Messages flash #}
+    {% for label, messages in app.flashes %}
+      {% for message in messages %}
+        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+      {% endfor %}
+    {% endfor %}
+
+    <div class="table-responsive shadow-sm bg-white rounded-3">
+      {# ✅ Bulk delete form (seul form autour du tableau) #}
+      <form method="post" action="{{ path('open_demat_admin_user_delete_bulk') }}" id="bulk-delete-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_users_bulk') }}">
+
+        <table class="table table-hover table-sm mb-0 align-middle">
+          <thead>
+          <tr>
+            <th style="width: 32px;">
+              <input type="checkbox" id="select-all" class="form-check-input" aria-label="Tout sélectionner">
+            </th>
+            <th style="width: 60px;">#</th>
+            <th>Utilisateur</th>
+            <th>Email</th>
+            <th style="width: 30%;">Rôles</th>
+            <th class="text-end" style="width: 200px;">Actions</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          {% for user in users %}
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="form-check-input user-checkbox"
+                  name="ids[]"
+                  value="{{ user.id }}"
+                  aria-label="Sélectionner l’utilisateur {{ user.username ?? user.userIdentifier }}"
+                >
+              </td>
+
+              <td class="text-muted small">{{ user.id }}</td>
+
+              <td>
+                <div class="user-identifier">
+                  {{ user.username ?? user.userIdentifier }}
+                </div>
+              </td>
+
+              <td>
+                {% if user.email %}
+                  <span class="user-email">{{ user.email }}</span>
+                {% else %}
+                  <span class="text-muted fst-italic">Non renseigné</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if user.roles is not empty %}
+                  <div class="d-flex flex-wrap gap-1">
+                    {% for role in user.roles %}
+                      <span class="badge badge-role" data-role="{{ role }}" title="{{ role }}">
+                        {{ role|replace({'ROLE_':''})|lower|title }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <span class="text-muted fst-italic">Aucun rôle</span>
+                {% endif %}
+              </td>
+
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editRolesModal-{{ user.id }}"
+                  >
+                    Éditer les rôles
+                  </button>
+
+                  {# ✅ Suppression unitaire sans form imbriqué #}
+                  <button
+                    type="submit"
+                    form="delete-user-{{ user.id }}"
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Supprimer définitivement cet utilisateur ?');"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">
+                Aucun utilisateur trouvé.
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+
+    {# ✅ Forms delete unitaires OUTSIDE du bulk form (évite nesting) #}
+    {% for user in users %}
+      <form
+        id="delete-user-{{ user.id }}"
+        method="post"
+        action="{{ path('open_demat_admin_user_delete', {id: user.id}) }}"
+        class="d-none"
+      >
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+      </form>
+    {% endfor %}
+
+    {# Modals séparés (création + édition rôles) #}
+    {% include '@OpenDemat/admin-bundle/src/templates/user/_modals.html.twig' with {
+      users: users,
+      availableRoles: availableRoles,
+      appRoles: appRoles
+    } %}
+
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const APP_ROLES = {{ appRoles|json_encode|raw }};
+
+  function normalizeList(raw) {
+    if (Array.isArray(raw)) return raw;
+    if (raw && typeof raw === 'object') return Object.values(raw);
+    return [];
+  }
+
+  function titleizeRole(role) {
+    return role
+      .replace(/^ROLE_/, '')
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/(^|\s)\S/g, m => m.toUpperCase());
+  }
+
+  // (Optionnel) select all
+  const selectAll = document.getElementById('select-all');
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = selectAll.checked);
+    });
+  }
+
+  function initRoleBuilder(opts) {
+    const cbUser    = opts.cbUser;
+    const cbAdmin   = opts.cbAdmin;
+    const appSelect = opts.appSelect;
+    const roleSelect= opts.roleSelect;
+    const addBtn    = opts.addBtn;
+    const chipsEl   = opts.chipsEl;
+    const inputsEl  = opts.inputsEl;
+
+    const selected = new Set();
+
+    function syncHiddenInputs() {
+      inputsEl.innerHTML = '';
+      Array.from(selected).sort().forEach(r => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'roles[]';
+        inp.value = r;
+        inputsEl.appendChild(inp);
+      });
+    }
+
+    function renderChips() {
+      chipsEl.innerHTML = '';
+      if (selected.size === 0) {
+        const span = document.createElement('span');
+        span.className = 'text-muted fst-italic';
+        span.textContent = 'Aucun rôle sélectionné';
+        chipsEl.appendChild(span);
+        return;
+      }
+
+      Array.from(selected).sort().forEach(r => {
+        const pill = document.createElement('span');
+        pill.className = 'badge badge-role';
+        pill.setAttribute('data-role', r);
+        pill.title = r;
+
+        const txt = document.createElement('span');
+        txt.textContent = titleizeRole(r);
+        pill.appendChild(txt);
+
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'badge-x';
+        x.innerHTML = '&times;';
+        x.setAttribute('aria-label', 'Retirer ' + r);
+        x.addEventListener('click', () => {
+          selected.delete(r);
+          if (r === 'ROLE_USER') cbUser.checked = false;
+          if (r === 'ROLE_ADMIN') cbAdmin.checked = false;
+          renderChips();
+          syncHiddenInputs();
+        });
+
+        pill.appendChild(x);
+        chipsEl.appendChild(pill);
+      });
+    }
+
+    function addRole(r) {
+      if (!r) return;
+      selected.add(r);
+      renderChips();
+      syncHiddenInputs();
+    }
+    function removeRole(r) {
+      if (!r) return;
+      selected.delete(r);
+      renderChips();
+      syncHiddenInputs();
+    }
+
+    cbUser.addEventListener('change', () => cbUser.checked ? addRole('ROLE_USER') : removeRole('ROLE_USER'));
+    cbAdmin.addEventListener('change', () => cbAdmin.checked ? addRole('ROLE_ADMIN') : removeRole('ROLE_ADMIN'));
+
+    appSelect.addEventListener('change', () => {
+      const app = appSelect.value;
+      roleSelect.innerHTML = '';
+
+      if (!app) {
+        roleSelect.disabled = true;
+        addBtn.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '— Sélectionne une application —';
+        roleSelect.appendChild(opt);
+        return;
+      }
+
+      const list = normalizeList(APP_ROLES[app]);
+      roleSelect.disabled = false;
+
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = list.length ? '— Choisir un rôle —' : '— Aucun rôle disponible —';
+      roleSelect.appendChild(opt0);
+
+      list.forEach(suffix => {
+        const opt = document.createElement('option');
+        opt.value = suffix;
+        opt.textContent = suffix;
+        roleSelect.appendChild(opt);
+      });
+
+      addBtn.disabled = true;
+    });
+
+    roleSelect.addEventListener('change', () => {
+      addBtn.disabled = !(roleSelect.value && appSelect.value);
+    });
+
+    addBtn.addEventListener('click', () => {
+      const app = appSelect.value;
+      const suffix = roleSelect.value;
+      if (!app || !suffix) return;
+      addRole(`ROLE_${app}_${suffix}`);
+      roleSelect.value = '';
+      addBtn.disabled = true;
+    });
+
+    return {
+      setRoles(rolesArray) {
+        selected.clear();
+        (rolesArray || []).forEach(r => selected.add(r));
+
+        cbUser.checked = selected.has('ROLE_USER');
+        cbAdmin.checked = selected.has('ROLE_ADMIN');
+
+        appSelect.value = '';
+        roleSelect.innerHTML = '<option value="">— Sélectionne une application —</option>';
+        roleSelect.disabled = true;
+        addBtn.disabled = true;
+
+        renderChips();
+        syncHiddenInputs();
+      }
+    };
+  }
+
+  const createModal = document.getElementById('createUserModal');
+  if (createModal) {
+    const api = initRoleBuilder({
+      cbUser: createModal.querySelector('#create_role_user'),
+      cbAdmin: createModal.querySelector('#create_role_admin'),
+      appSelect: createModal.querySelector('#create_app_select'),
+      roleSelect: createModal.querySelector('#create_app_role_select'),
+      addBtn: createModal.querySelector('#create_add_app_role'),
+      chipsEl: createModal.querySelector('#create_roles_chips'),
+      inputsEl: createModal.querySelector('#create_roles_inputs'),
+    });
+
+    createModal.addEventListener('show.bs.modal', () => {
+      api.setRoles(['ROLE_USER']);
+    });
+  }
+
+  document.querySelectorAll('[id^="editRolesModal-"]').forEach(modal => {
+    const id = modal.id.replace('editRolesModal-', '');
+    const userId = parseInt(id, 10);
+    if (!userId) return;
+
+    const rolesJsonEl = modal.querySelector('#user_roles_json_' + userId);
+    let initialRoles = [];
+    try {
+      initialRoles = rolesJsonEl ? JSON.parse(rolesJsonEl.textContent) : [];
+    } catch (e) {
+      initialRoles = [];
+    }
+
+    const api = initRoleBuilder({
+      cbUser: modal.querySelector('#edit_role_user_' + userId),
+      cbAdmin: modal.querySelector('#edit_role_admin_' + userId),
+      appSelect: modal.querySelector('#edit_app_select_' + userId),
+      roleSelect: modal.querySelector('#edit_app_role_select_' + userId),
+      addBtn: modal.querySelector('#edit_add_app_role_' + userId),
+      chipsEl: modal.querySelector('#edit_roles_chips_' + userId),
+      inputsEl: modal.querySelector('#edit_roles_inputs_' + userId),
+    });
+
+    modal.addEventListener('show.bs.modal', () => {
+      api.setRoles(initialRoles);
+    });
+  });
+});
+  </script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{# app_open_demat/admin-bundle/src/templates/attachment/_modals.html.twig #}
+
+{% for pa in attachments %}
+  {% set d = pa.document %}
+
+  <div class="modal fade" id="editAttachmentModal-{{ pa.id }}" tabindex="-1"
+       aria-labelledby="editAttachmentModalLabel-{{ pa.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <form method="post"
+              enctype="multipart/form-data"
+              action="{{ path('open_demat_admin_attachment_update', {id: pa.id}) }}?process={{ process|url_encode }}&type={{ type|url_encode }}&q={{ q|url_encode }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('update_attachment_' ~ pa.id) }}">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="editAttachmentModalLabel-{{ pa.id }}">
+              Modifier la pièce jointe #{{ pa.id }}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="alert alert-light small mb-3">
+              <div><strong>Document :</strong> {{ d.originalName }}</div>
+              <div class="text-muted">
+                mime: <span class="mono">{{ d.mimeType }}</span>
+                • taille: <span class="mono">{{ d.sizeBytes }}</span>
+                • bucket: <span class="mono">{{ d.bucket }}</span>
+              </div>
+              {% if d.checksumSha256 %}
+                <div class="text-muted">sha256: <span class="mono">{{ d.checksumSha256 }}</span></div>
+              {% endif %}
+              <div class="text-muted">
+                process/type: <span class="mono">{{ pa.processName }}</span> / <span class="mono">{{ pa.caseType }}</span>
+                • case_id: <span class="mono">{{ pa.caseId }}</span>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Nom affiché</label>
+                <input type="text" name="originalName" class="form-control" value="{{ d.originalName }}" required>
+                <div class="form-text">
+                  Modifie la métadonnée en base. (Le contenu MinIO ne change pas tant que tu n’uploades pas un fichier.)
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Remplacer le fichier (optionnel)</label>
+                <input type="file" name="file" class="form-control"
+                       accept=".pdf,image/*">
+                <div class="form-text">
+                  Si tu sélectionnes un fichier : il remplace le contenu MinIO de ce document (même UUID).
+                  Les métadonnées (mime, taille, checksum, uploadedBy) seront mises à jour.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success">Enregistrer</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}

@@ -1,0 +1,175 @@
+{# app_open_demat/admin-bundle/src/templates/attachment/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration des pièces jointes{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .admin-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem}
+    .admin-meta{text-align:right;font-size:.875rem;color:var(--muted,#6c757d)}
+    .toolbar{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;justify-content:space-between;margin-bottom:1rem}
+    .toolbar .form-control,.toolbar .form-select{max-width:280px}
+    .file-name{font-weight:600}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .badge-lite{font-size:.75rem;border-radius:999px;border:1px solid rgba(0,0,0,.08);background-color:rgba(0,0,0,.03);color:#333}
+    @media (max-width:575.98px){.admin-meta{text-align:left}.toolbar .form-control,.toolbar .form-select{max-width:100%}}
+  </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+  <div class="admin-header">
+    <div>
+      <h1 class="mb-1">Administration des pièces jointes</h1>
+      <p class="text-muted mb-0">
+        Filtre par process et type, visualisation des fichiers, modification des métadonnées.
+      </p>
+    </div>
+    <div class="admin-meta">
+      <div>Total : <strong>{{ attachments|length }}</strong></div>
+      {% if process and type %}
+        <div class="text-muted">Filtre : <span class="badge-lite px-2 py-1">{{ process }}</span> / <span class="badge-lite px-2 py-1">{{ type }}</span></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+      <div>
+        <label class="form-label small text-muted mb-1">Process</label>
+        <select name="process" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">— Choisir —</option>
+          {% for p in availableProcesses %}
+            <option value="{{ p }}" {% if p == process %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label small text-muted mb-1">Type (case_type)</label>
+        <select name="type" class="form-select form-select-sm" {% if not process %}disabled{% endif %} onchange="this.form.submit()">
+          <option value="">{% if process %}— Choisir —{% else %}— Sélectionne un process —{% endif %}</option>
+          {% for t in availableTypes %}
+            <option value="{{ t }}" {% if t == type %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label small text-muted mb-1">Recherche</label>
+        <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm"
+               placeholder="Nom, caseId, user..." {% if not (process and type) %}disabled{% endif %}>
+      </div>
+
+      <button class="btn btn-sm btn-outline-secondary" type="submit" {% if not (process and type) %}disabled{% endif %}>
+        Rechercher
+      </button>
+
+      <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-sm btn-outline-secondary ms-2">
+        ← Retour au dashboard
+      </a>
+    </form>
+  </div>
+
+  {# Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  {% if not process or not type %}
+    <div class="alert alert-info">
+      Sélectionne d’abord un <strong>process</strong>, puis un <strong>type</strong> pour afficher les pièces jointes.
+    </div>
+  {% else %}
+    <div class="table-responsive shadow-sm bg-white rounded-3">
+      <table class="table table-hover table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th style="width:60px;">#</th>
+            <th>Fichier</th>
+            <th>Infos</th>
+            <th>Création</th>
+            <th class="text-end" style="width:220px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for pa in attachments %}
+          {% set d = pa.document %}
+          <tr>
+            <td class="text-muted small">{{ pa.id }}</td>
+
+            <td>
+              <div class="file-name">
+                {{ d.originalName ?? '—' }}
+              </div>
+              <div class="text-muted small">
+                case_id: <span class="mono">{{ pa.caseId }}</span>
+              </div>
+            </td>
+
+            <td class="small">
+              <div><span class="badge-lite px-2 py-1">{{ d.mimeType }}</span></div>
+              <div class="text-muted">
+                taille: <span class="mono">{{ d.sizeBytes ?? d.size ?? '—' }}</span>
+                {% if d.bucket %} • bucket: <span class="mono">{{ d.bucket }}</span>{% endif %}
+              </div>
+              {% if d.checksumSha256 %}
+                <div class="text-muted">sha256: <span class="mono">{{ d.checksumSha256|slice(0,12) ~ '…' }}</span></div>
+              {% endif %}
+              {% if pa.createdBy %}
+                <div class="text-muted">by: <span class="mono">{{ pa.createdBy.username ?? pa.createdBy.userIdentifier }}</span></div>
+              {% endif %}
+            </td>
+
+            <td class="small text-muted">
+              {{ pa.createdAt ? pa.createdAt|date('d/m/Y H:i') : '—' }}
+            </td>
+
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                {# Visualiser via la route document (à adapter selon ton routing) #}
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('open_demat_admin_document_view', {id: d.id}) }}"
+                   target="_blank" rel="noopener">
+                  Visualiser
+                </a>
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editAttachmentModal-{{ pa.id }}">
+                  Modifier
+                </button>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              Aucune pièce jointe trouvée.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% include '@OpenDemat/admin-bundle/src/templates/attachment/_modals.html.twig' with {
+      attachments: attachments,
+      process: process,
+      type: type,
+      q: q,
+      availableProcesses: availableProcesses,
+      availableTypes: availableTypes
+    } %}
+  {% endif %}
+
+</div>
+{% endblock %}

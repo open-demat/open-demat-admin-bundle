@@ -1,0 +1,12 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  OpenDemat\AdminBundle\:
+    resource: '../../src/*'
+    exclude: '../../src/{DependencyInjection,AdminBundle.php}'
+
+  OpenDemat\AdminBundle\Hub\AdminGlobalAppDefinition:
+    tags: ['open_demat.hub.app_definition']

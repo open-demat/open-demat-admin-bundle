@@ -1,0 +1,96 @@
+{# app_open_demat/admin-bundle/src/templates/process/form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  {% set label = def.label ?? def.shortName ?? def.key %}
+  {% if mode == 'new' %}Nouveau – {{ label }}{% else %}Modifier – {{ label }}{% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .admin-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem}
+    .admin-meta{text-align:right;font-size:.875rem;color:var(--muted,#6c757d)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .badge-lite{font-size:.75rem;border-radius:999px;border:1px solid rgba(0,0,0,.08);background-color:rgba(0,0,0,.03);color:#333}
+    @media (max-width:575.98px){.admin-meta{text-align:left}}
+  </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  {% set label = def.label ?? def.shortName ?? def.key %}
+
+  <div class="admin-header">
+    <div>
+      <h1 class="mb-1">
+        {% if mode == 'new' %}
+          Nouveau <span class="badge-lite px-2 py-1">{{ label }}</span>
+        {% else %}
+          Modifier <span class="badge-lite px-2 py-1">{{ label }}</span>
+          <span class="text-muted">#{{ entity.id }}</span>
+        {% endif %}
+      </h1>
+
+      <p class="text-muted mb-0">
+        <span class="badge-lite px-2 py-1">{{ def.key }}</span>
+        <span class="ms-2">Entity : <span class="mono">{{ def.entityClass }}</span></span>
+      </p>
+    </div>
+
+    <div class="admin-meta">
+      <a href="{{ path('open_demat_admin_process_list', { key: key|url_encode }) }}"
+         class="btn btn-sm btn-outline-secondary">
+        ← Retour à la liste
+      </a>
+
+      {% if mode != 'new' %}
+        <div class="mt-2">
+          <div>Créé : <strong>{{ entity.createdAt ? entity.createdAt|date('d/m/Y H:i') : '—' }}</strong></div>
+          <div>MAJ : <strong>{{ entity.updatedAt ? entity.updatedAt|date('d/m/Y H:i') : '—' }}</strong></div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <div class="card shadow-sm rounded-3">
+    <div class="card-body">
+      {{ form_start(form) }}
+
+      <div class="row g-3">
+        {# Affiche tous les champs sauf _token #}
+        {% for child in form %}
+          {% if child.vars.name != '_token' %}
+            <div class="col-12 col-md-6">
+              {{ form_row(child) }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">
+          {% if mode == 'new' %}Créer{% else %}Enregistrer{% endif %}
+        </button>
+        <a class="btn btn-outline-secondary"
+           href="{{ path('open_demat_admin_process_list', { key: key|url_encode }) }}">
+          Annuler
+        </a>
+      </div>
+
+      {{ form_end(form) }}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

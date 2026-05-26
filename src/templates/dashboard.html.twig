@@ -1,0 +1,178 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+      .admin-home {
+        max-width: 1200px;
+      }
+      .admin-home-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1.5rem;
+      }
+      .admin-home-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--open-demat-red) 10%, transparent);
+        font-size: 1.4rem;
+      }
+      .admin-home-meta {
+        min-width: 220px;
+      }
+      .admin-badge-env {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .35rem .6rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--open-demat-red) 8%, transparent);
+        font-size: .8rem;
+        margin-bottom: .4rem;
+      }
+      .admin-badge-env .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #22c55e;
+      }
+      .admin-app-card {
+        position: relative;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      }
+      .admin-app-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 18px rgba(0,0,0,.08);
+        border-color: color-mix(in srgb, var(--open-demat-red) 45%, var(--border) 55%);
+      }
+      @media (max-width: 767.98px) {
+        .admin-home-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid admin-home">
+
+    <!-- HEADER -->
+    <header class="admin-home-header mb-4">
+        <div>
+            <h1 class="page-title mb-1 d-flex align-items-center gap-2">
+                <span class="admin-home-icon">🛠️</span>
+                <span>Panneau d'administration</span>
+            </h1>
+        </div>
+
+        <div class="admin-home-meta text-end">
+            <div class="admin-badge-env">
+                <span class="dot"></span>
+                <span>Environnement : <strong>{{ app.environment|capitalize }}</strong></span>
+            </div>
+            <p class="small text-muted mb-0">
+                Connecté en tant que<br>
+                <strong>{{ app.user.username ?? 'Compte administrateur' }}</strong>
+            </p>
+        </div>
+    </header>
+
+    <!-- SECTION APPS -->
+    <section aria-labelledby="admin-apps-title">
+        <div class="d-flex align-items-baseline justify-content-between mb-2 flex-wrap gap-2">
+            <div>
+                <h2 id="admin-apps-title" class="h5 mb-1">Applications d’administration</h2>
+                <p class="small text-muted mb-0">
+                    Accédez aux modules disponibles.
+                </p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Gestion des utilisateurs -->
+            <div class="col-sm-6 col-lg-4">
+                <a href="{{ path('open_demat_admin_user_index') }}" class="text-decoration-none d-block h-100">
+                    <div class="app-card admin-app-card h-100">
+                        <div class="app-icon">👤</div>
+
+                        <div>
+                            <h3>Gestion des utilisateurs</h3>
+                            <p>Consulter les comptes, modifier les rôles et administrer les accès Open Demat.</p>
+                        </div>
+
+                        <span class="btn-open-demat mt-2">Accéder</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Administration des documents -->
+            <div class="col-sm-6 col-lg-4">
+                <a href="{{ path('open_demat_admin_attachment_index') }}" class="text-decoration-none d-block h-100">
+                    <div class="app-card admin-app-card h-100">
+                        <div class="app-icon">📎</div>
+
+                        <div>
+                            <h3>Pièces jointes</h3>
+                            <p>
+                                Visualiser, renommer et remplacer les fichiers associés aux processus
+                                (documents stockés, métadonnées, auteurs).
+                            </p>
+                        </div>
+
+                        <span class="btn-open-demat mt-2">Accéder</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Référentiels -->
+            <div class="col-sm-6 col-lg-4">
+                <a href="{{ path('open_demat_admin_referentiels_index') }}" class="text-decoration-none d-block h-100">
+                    <div class="app-card admin-app-card h-100">
+                        <div class="app-icon">📚</div>
+
+                        <div>
+                            <h3>Référentiels</h3>
+                            <p>
+                                Gérer les référentiels (code/libellé/actif) détectés automatiquement
+                                par Doctrine, avec CRUD générique.
+                            </p>
+                        </div>
+
+                        <span class="btn-open-demat mt-2">Accéder</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Process (cases) -->
+            <div class="col-sm-6 col-lg-4">
+                <a href="{{ path('open_demat_admin_process_index') }}" class="text-decoration-none d-block h-100">
+                    <div class="app-card admin-app-card h-100">
+                        <div class="app-icon">🗂️</div>
+
+                        <div>
+                            <h3>Process</h3>
+                            <p>
+                                Accéder aux dossiers (cases) des applications : liste, création, édition et suppression
+                                via CRUD centralisé.
+                            </p>
+                        </div>
+
+                        <span class="btn-open-demat mt-2">Accéder</span>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

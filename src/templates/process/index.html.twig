@@ -1,0 +1,111 @@
+{# app_open_demat/admin-bundle/src/templates/process/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration des process{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .admin-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem}
+    .admin-meta{text-align:right;font-size:.875rem;color:var(--muted,#6c757d)}
+    .toolbar{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;justify-content:space-between;margin-bottom:1rem}
+    .toolbar .form-control{max-width:320px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .badge-lite{font-size:.75rem;border-radius:999px;border:1px solid rgba(0,0,0,.08);background-color:rgba(0,0,0,.03);color:#333}
+    @media (max-width:575.98px){.admin-meta{text-align:left}.toolbar .form-control{max-width:100%}}
+  </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+  <div class="admin-header">
+    <div>
+      <h1 class="mb-1">Administration des process</h1>
+      <p class="text-muted mb-0">
+        Détection automatique (Doctrine) des entités de dossier <span class="mono">AbstractProcessEntity</span>.
+      </p>
+    </div>
+    <div class="admin-meta">
+      <div>Total : <strong>{{ defs|length }}</strong></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+      <div>
+        <label class="form-label small text-muted mb-1">Recherche</label>
+        <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm"
+               placeholder="clé, entity, table…">
+      </div>
+
+      <button class="btn btn-sm btn-outline-secondary" type="submit">Rechercher</button>
+
+      <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-sm btn-outline-secondary ms-2">
+        ← Retour au dashboard
+      </a>
+    </form>
+  </div>
+
+  {# Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <div class="table-responsive shadow-sm bg-white rounded-3">
+    <table class="table table-hover table-sm mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Process</th>
+          <th>Entity</th>
+          <th>Table</th>
+          <th class="text-end" style="width:180px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for def in defs %}
+        {% set label = def.label ?? def.shortName ?? def.key %}
+        {% set fullTable = (def.schema ? def.schema ~ '.' : '') ~ def.table %}
+        <tr>
+          <td>
+            <div class="fw-semibold">
+              <span class="badge-lite px-2 py-1">{{ label }}</span>
+            </div>
+            <div class="text-muted small">
+              <span class="badge-lite px-2 py-1">{{ def.key }}</span>
+            </div>
+          </td>
+
+          <td class="small">
+            <div class="mono">{{ def.entityClass }}</div>
+          </td>
+
+          <td class="small">
+            <div class="mono">{{ fullTable }}</div>
+          </td>
+
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary"
+               href="{{ path('open_demat_admin_process_list', { key: def.key|url_encode }) }}">
+              Ouvrir
+            </a>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center text-muted py-4">
+            Aucun process détecté.
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}
