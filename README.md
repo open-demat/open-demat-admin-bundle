@@ -28,6 +28,51 @@ Dans l'application Open Demat, les bundles de type `open-demat-bundle` sont inst
 - CRUD générique des référentiels
 - CRUD générique des entités de process déclarées dans le registre
 
+## Licence
+
+Ce projet est distribué sous licence GNU Affero General Public License v3.0
+ou ultérieure, avec une exception spécifique pour les bundles/plugins.
+
+Le cœur du logiciel reste libre : si vous modifiez le cœur et que vous le
+redistribuez ou le rendez accessible à des utilisateurs via un réseau, vous devez
+rendre disponible le code source correspondant de cette version modifiée.
+
+Les bundles, plugins ou modules développés via les API publiques d’extension
+documentées peuvent rester privés ou être distribués sous une autre licence,
+conformément à l’exception décrite dans `LICENSE-EXCEPTION.md`.
+
+Voir :
+
+- `LICENSE`
+- `LICENSE-EXCEPTION.md`
+- `NOTICE.md`
+
+## Exception pour les bundles
+
+Le cœur du projet est distribué sous licence AGPLv3.
+
+Par exception, les bundles, plugins ou modules Symfony développés pour des besoins
+internes peuvent rester privés ou être distribués sous une autre licence, à condition
+qu’ils interagissent avec le cœur uniquement via les API publiques d’extension
+documentées.
+
+Cette exception ne couvre pas les modifications du cœur, ni le code copié depuis
+le cœur vers un bundle. Toute modification du cœur reste soumise à l’AGPLv3.
+
+## Support commercial
+
+Un support professionnel est disponible pour :
+
+- installation et configuration ;
+- maintenance corrective et évolutive ;
+- hébergement managé ;
+- intégration avec LDAP, CAS, SAML, API métiers ;
+- développement de bundles spécifiques ;
+- formation administrateurs et utilisateurs ;
+- accompagnement au déploiement.
+
+Contact : contact@example.com
+
 ## Configuration
 
 ```yaml
