@@ -27,3 +27,14 @@ Dans l'application Open Demat, les bundles de type `open-demat-bundle` sont inst
 - Administration des pièces jointes
 - CRUD générique des référentiels
 - CRUD générique des entités de process déclarées dans le registre
+
+## Configuration
+
+```yaml
+open_demat_admin:
+  organization:
+    name: 'Mon organisation'
+    logo: 'assets/img/organization-logo.svg'
+```
+
+Le `logo` est un chemin d'asset public. S'il est vide, l'interface affiche une icône générique.
