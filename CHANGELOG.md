@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.6.0 (2026-05-27)
+
+
+### Features
+
+* add global admin configuration ([4bc76bf](https://github.com/open-demat/open-demat-admin-bundle/commit/4bc76bf196410a68760f2b578da7cba3f9a33024))
+
+
+### Bug Fixes
+
+* add files ([e9c282c](https://github.com/open-demat/open-demat-admin-bundle/commit/e9c282cd7a1800b7a0105f45841c9c7ae84b40ba))
+
 ### [1.5.1](https://gitlab.example.org/bpm/open-demat/open-demat-admin-bundle/compare/v1.5.0...v1.5.1) (2026-04-14)
 
 
