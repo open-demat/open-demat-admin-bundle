@@ -62,13 +62,21 @@
 {% endblock %}
 
 {% block body %}
+{% set orgName = open_demat_admin_organization_name|default(organization_name|default('Open Demat')) %}
+{% set orgLogo = open_demat_admin_organization_logo|default(organization_logo|default('')) %}
 <div class="container-fluid admin-home">
 
     <!-- HEADER -->
     <header class="admin-home-header mb-4">
         <div>
             <h1 class="page-title mb-1 d-flex align-items-center gap-2">
-                <span class="admin-home-icon">🛠️</span>
+                <span class="admin-home-icon">
+                    {% if orgLogo %}
+                        <img src="{{ asset(orgLogo) }}" alt="" style="max-width: 26px; max-height: 26px; object-fit: contain;">
+                    {% else %}
+                        <i class="bx bx-cog" aria-hidden="true"></i>
+                    {% endif %}
+                </span>
                 <span>Panneau d'administration</span>
             </h1>
         </div>
@@ -106,7 +114,7 @@
 
                         <div>
                             <h3>Gestion des utilisateurs</h3>
-                            <p>Consulter les comptes, modifier les rôles et administrer les accès Open Demat.</p>
+                            <p>Consulter les comptes, modifier les rôles et administrer les accès {{ orgName }}.</p>
                         </div>
 
                         <span class="btn-open-demat mt-2">Accéder</span>
@@ -163,6 +171,25 @@
                             <p>
                                 Accéder aux dossiers (cases) des applications : liste, création, édition et suppression
                                 via CRUD centralisé.
+                            </p>
+                        </div>
+
+                        <span class="btn-open-demat mt-2">Accéder</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Configuration globale -->
+            <div class="col-sm-6 col-lg-4">
+                <a href="{{ path('open_demat_admin_configuration') }}" class="text-decoration-none d-block h-100">
+                    <div class="app-card admin-app-card h-100">
+                        <div class="app-icon">⚙️</div>
+
+                        <div>
+                            <h3>Configuration globale</h3>
+                            <p>
+                                Consulter et modifier les paramètres Organisation, CAS et S3/MinIO utilisés par la
+                                plateforme.
                             </p>
                         </div>
 

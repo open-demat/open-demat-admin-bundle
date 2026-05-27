@@ -8,5 +8,36 @@ services:
     resource: '../../src/*'
     exclude: '../../src/{DependencyInjection,AdminBundle.php}'
 
+  OpenDemat\AdminBundle\Twig\AdminOrganizationExtension:
+    arguments:
+      $organizationName: '%open_demat_admin.organization.name%'
+      $organizationLogo: '%open_demat_admin.organization.logo%'
+    tags: ['twig.extension']
+
+  OpenDemat\AdminBundle\Service\AdminGlobalConfiguration:
+    arguments:
+      $organization:
+        name: '%open_demat_admin.organization.name%'
+        logo: '%open_demat_admin.organization.logo%'
+      $cas:
+        base_url: '%open_demat_admin.cas.base_url%'
+        logout_url: '%open_demat_admin.cas.logout_url%'
+        host: '%open_demat_admin.cas.host%'
+        port: '%open_demat_admin.cas.port%'
+        path: '%open_demat_admin.cas.path%'
+        login_target: '%open_demat_admin.cas.login_target%'
+        gateway: '%open_demat_admin.cas.gateway%'
+      $s3:
+        endpoint: '%open_demat_admin.s3.endpoint%'
+        region: '%open_demat_admin.s3.region%'
+        bucket: '%open_demat_admin.s3.bucket%'
+        use_path_style: '%open_demat_admin.s3.use_path_style%'
+        access_key: '%open_demat_admin.s3.access_key%'
+        secret_key: '%open_demat_admin.s3.secret_key%'
+
+  OpenDemat\AdminBundle\Service\AdminGlobalConfigurationWriter:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+
   OpenDemat\AdminBundle\Hub\AdminGlobalAppDefinition:
     tags: ['open_demat.hub.app_definition']

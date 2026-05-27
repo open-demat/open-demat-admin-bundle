@@ -1,0 +1,222 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configuration globale{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+      .admin-config {
+        max-width: 1200px;
+      }
+      .admin-config-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+      }
+      .admin-config-form {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .admin-config-fieldset {
+        border: 1px solid var(--border, #dee2e6);
+        border-radius: .5rem;
+        padding: 1rem;
+        background: #fff;
+      }
+      .admin-config-fieldset legend {
+        float: none;
+        width: auto;
+        padding: 0 .35rem;
+        margin-bottom: .75rem;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .admin-config-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: .85rem;
+      }
+      .admin-config-card {
+        border: 1px solid var(--border, #dee2e6);
+        border-radius: .5rem;
+        background: #fff;
+        overflow: hidden;
+      }
+      .admin-config-card h2 {
+        font-size: 1rem;
+        margin: 0;
+        padding: .9rem 1rem;
+        border-bottom: 1px solid var(--border, #dee2e6);
+        background: #f8f9fa;
+      }
+      .admin-config-list {
+        display: grid;
+        gap: 0;
+      }
+      .admin-config-row {
+        display: grid;
+        grid-template-columns: minmax(110px, 36%) minmax(0, 1fr);
+        gap: .75rem;
+        padding: .75rem 1rem;
+        border-bottom: 1px solid #f1f3f5;
+      }
+      .admin-config-row:last-child {
+        border-bottom: 0;
+      }
+      .admin-config-label {
+        color: #6c757d;
+        font-size: .86rem;
+      }
+      .admin-config-value {
+        min-width: 0;
+        font-family: var(--bs-font-monospace);
+        font-size: .86rem;
+        word-break: break-word;
+      }
+      .admin-config-empty {
+        color: #adb5bd;
+        font-family: var(--bs-body-font-family);
+      }
+      @media (max-width: 575.98px) {
+        .admin-config-row {
+          grid-template-columns: 1fr;
+          gap: .25rem;
+        }
+      }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid admin-config">
+    <div class="d-flex align-items-start justify-content-between gap-3 mb-4 flex-wrap">
+        <div>
+            <h1 class="page-title mb-1">Configuration globale</h1>
+            <p class="small text-muted mb-0">Paramètres Organisation, CAS et S3/MinIO chargés depuis la configuration Symfony et les variables d'environnement.</p>
+        </div>
+        <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bx bx-arrow-back" aria-hidden="true"></i>
+            Retour
+        </a>
+    </div>
+
+    <form method="post" action="{{ path('open_demat_admin_configuration_update') }}" class="admin-config-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('open_demat_admin_configuration') }}">
+
+        <fieldset class="admin-config-fieldset">
+            <legend>Organisation</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="organization_name">Nom</label>
+                    <input class="form-control" id="organization_name" name="organization[name]" value="{{ formValues.organization.name }}">
+                </div>
+                <div>
+                    <label class="form-label" for="organization_logo">Logo</label>
+                    <input class="form-control" id="organization_logo" name="organization[logo]" value="{{ formValues.organization.logo }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="admin-config-fieldset">
+            <legend>CAS</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="cas_base_url">URL de base</label>
+                    <input class="form-control" id="cas_base_url" name="cas[base_url]" value="{{ formValues.cas.base_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="cas_logout_url">URL de déconnexion</label>
+                    <input class="form-control" id="cas_logout_url" name="cas[logout_url]" value="{{ formValues.cas.logout_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="cas_host">Hôte</label>
+                    <input class="form-control" id="cas_host" name="cas[host]" value="{{ formValues.cas.host }}">
+                </div>
+                <div>
+                    <label class="form-label" for="cas_port">Port</label>
+                    <input class="form-control" id="cas_port" name="cas[port]" inputmode="numeric" value="{{ formValues.cas.port }}">
+                </div>
+                <div>
+                    <label class="form-label" for="cas_path">Chemin</label>
+                    <input class="form-control" id="cas_path" name="cas[path]" value="{{ formValues.cas.path }}">
+                </div>
+                <div>
+                    <label class="form-label" for="cas_login_target">Cible de connexion</label>
+                    <input class="form-control" id="cas_login_target" name="cas[login_target]" value="{{ formValues.cas.login_target }}">
+                </div>
+                <div>
+                    <label class="form-label" for="cas_gateway">Gateway</label>
+                    <select class="form-select" id="cas_gateway" name="cas[gateway]">
+                        <option value="0" {{ formValues.cas.gateway == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.cas.gateway == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="admin-config-fieldset">
+            <legend>S3 / MinIO</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="s3_endpoint">Endpoint</label>
+                    <input class="form-control" id="s3_endpoint" name="s3[endpoint]" value="{{ formValues.s3.endpoint }}">
+                </div>
+                <div>
+                    <label class="form-label" for="s3_region">Région</label>
+                    <input class="form-control" id="s3_region" name="s3[region]" value="{{ formValues.s3.region }}">
+                </div>
+                <div>
+                    <label class="form-label" for="s3_bucket">Bucket</label>
+                    <input class="form-control" id="s3_bucket" name="s3[bucket]" value="{{ formValues.s3.bucket }}">
+                </div>
+                <div>
+                    <label class="form-label" for="s3_use_path_style">Path style</label>
+                    <select class="form-select" id="s3_use_path_style" name="s3[use_path_style]">
+                        <option value="0" {{ formValues.s3.use_path_style == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.s3.use_path_style == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="s3_access_key">Access key</label>
+                    <input class="form-control" id="s3_access_key" name="s3[access_key]" type="password" autocomplete="new-password" placeholder="Laisser vide pour conserver">
+                </div>
+                <div>
+                    <label class="form-label" for="s3_secret_key">Secret key</label>
+                    <input class="form-control" id="s3_secret_key" name="s3[secret_key]" type="password" autocomplete="new-password" placeholder="Laisser vide pour conserver">
+                </div>
+            </div>
+        </fieldset>
+
+        <div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bx bx-save" aria-hidden="true"></i>
+                Enregistrer
+            </button>
+        </div>
+    </form>
+
+    <div class="admin-config-grid">
+        {% for title, rows in sections %}
+            <section class="admin-config-card" aria-labelledby="config-section-{{ loop.index }}">
+                <h2 id="config-section-{{ loop.index }}">{{ title }}</h2>
+                <div class="admin-config-list">
+                    {% for row in rows %}
+                        <div class="admin-config-row">
+                            <div class="admin-config-label">{{ row.label }}</div>
+                            <div class="admin-config-value">
+                                {% if row.value is same as('') or row.value is null %}
+                                    <span class="admin-config-empty">Non renseigné</span>
+                                {% elseif row.secret|default(false) %}
+                                    {{ row.value }}
+                                {% else %}
+                                    {{ row.value }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

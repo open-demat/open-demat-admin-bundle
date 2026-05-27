@@ -50,6 +50,20 @@ final class AdminBundleIntegrationTest extends WebTestCase
         $this->assertResponseIsSuccessful();
     }
 
+    public function test_configuration_page_accessible_with_role_admin(): void
+    {
+        $client = static::createClient();
+        $em = $this->em();
+
+        $admin = TestUserFactory::createUser($em, 'configuration-admin-' . bin2hex(random_bytes(4)), ['ROLE_ADMIN']);
+
+        $client->loginUser($admin, 'main');
+        $client->request('GET', '/admin/configuration');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Configuration globale');
+    }
+
     public function test_process_index_requires_authentication(): void
     {
         $client = static::createClient();
