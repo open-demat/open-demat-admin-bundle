@@ -19,6 +19,9 @@ services:
       $organization:
         name: '%open_demat_admin.organization.name%'
         logo: '%open_demat_admin.organization.logo%'
+      $theme:
+        primary_color: '%open_demat_admin.theme.primary_color%'
+        primary_dark_color: '%open_demat_admin.theme.primary_dark_color%'
       $cas:
         base_url: '%open_demat_admin.cas.base_url%'
         logout_url: '%open_demat_admin.cas.logout_url%'
