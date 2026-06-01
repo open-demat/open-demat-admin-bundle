@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/open-demat/open-demat-admin-bundle/compare/v1.6.0...v1.7.0) (2026-06-01)
+
+
+### Features
+
+* manage theme and logo in global config ([a826e03](https://github.com/open-demat/open-demat-admin-bundle/commit/a826e03ba772aadeea47d71553660e548795e3e0))
+
 ## 1.6.0 (2026-05-27)
 
 
