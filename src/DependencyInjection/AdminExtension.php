@@ -18,6 +18,8 @@ class AdminExtension extends ConfigurableExtension
     {
         $container->setParameter('open_demat_admin.organization.name', $mergedConfig['organization']['name']);
         $container->setParameter('open_demat_admin.organization.logo', $mergedConfig['organization']['logo']);
+        $container->setParameter('open_demat_admin.theme.primary_color', $mergedConfig['theme']['primary_color']);
+        $container->setParameter('open_demat_admin.theme.primary_dark_color', $mergedConfig['theme']['primary_dark_color']);
         $container->setParameter('open_demat_admin.cas.base_url', $mergedConfig['cas']['base_url']);
         $container->setParameter('open_demat_admin.cas.logout_url', $mergedConfig['cas']['logout_url']);
         $container->setParameter('open_demat_admin.cas.host', $mergedConfig['cas']['host']);

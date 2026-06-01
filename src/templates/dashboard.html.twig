@@ -64,6 +64,7 @@
 {% block body %}
 {% set orgName = open_demat_admin_organization_name|default(organization_name|default('Open Demat')) %}
 {% set orgLogo = open_demat_admin_organization_logo|default(organization_logo|default('')) %}
+{% set phpEnvironment = app.request.server.get('APP_ENV')|default(app.environment|default('dev')) %}
 <div class="container-fluid admin-home">
 
     <!-- HEADER -->
@@ -84,7 +85,7 @@
         <div class="admin-home-meta text-end">
             <div class="admin-badge-env">
                 <span class="dot"></span>
-                <span>Environnement : <strong>{{ app.environment|capitalize }}</strong></span>
+                <span>Environnement : <strong>{{ phpEnvironment|capitalize }}</strong></span>
             </div>
             <p class="small text-muted mb-0">
                 Connecté en tant que<br>
