@@ -1,6 +1,7 @@
 {
   "name": "open-demat-admin-bundle",
   "version": "1.6.0",
+  "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "standard-version": "^9.5.0"
   }

@@ -6,11 +6,13 @@ final class AdminGlobalConfiguration
 {
     /**
      * @param array<string, mixed> $organization
+     * @param array<string, mixed> $theme
      * @param array<string, mixed> $cas
      * @param array<string, mixed> $s3
      */
     public function __construct(
         private readonly array $organization,
+        private readonly array $theme,
         private readonly array $cas,
         private readonly array $s3,
     ) {
@@ -25,6 +27,10 @@ final class AdminGlobalConfiguration
             'Organisation' => [
                 ['label' => 'Nom', 'value' => $this->organization['name'] ?? ''],
                 ['label' => 'Logo', 'value' => $this->organization['logo'] ?? ''],
+            ],
+            'Thème' => [
+                ['label' => 'Couleur principale', 'value' => $this->theme['primary_color'] ?? ''],
+                ['label' => 'Couleur principale foncée', 'value' => $this->theme['primary_dark_color'] ?? ''],
             ],
             'CAS' => [
                 ['label' => 'URL de base', 'value' => $this->cas['base_url'] ?? ''],
@@ -56,6 +62,10 @@ final class AdminGlobalConfiguration
                 'name' => (string) ($this->organization['name'] ?? ''),
                 'logo' => (string) ($this->organization['logo'] ?? ''),
             ],
+            'theme' => [
+                'primary_color' => (string) ($this->theme['primary_color'] ?? '#E42535'),
+                'primary_dark_color' => (string) ($this->theme['primary_dark_color'] ?? '#B51E2A'),
+            ],
             'cas' => [
                 'base_url' => (string) ($this->cas['base_url'] ?? ''),
                 'logout_url' => (string) ($this->cas['logout_url'] ?? ''),
@@ -84,6 +94,8 @@ final class AdminGlobalConfiguration
         return [
             'ORGANIZATION_NAME' => (string) ($this->organization['name'] ?? ''),
             'ORGANIZATION_LOGO' => (string) ($this->organization['logo'] ?? ''),
+            'THEME_PRIMARY_COLOR' => (string) ($this->theme['primary_color'] ?? '#E42535'),
+            'THEME_PRIMARY_DARK_COLOR' => (string) ($this->theme['primary_dark_color'] ?? '#B51E2A'),
             'CAS_BASE_URL' => (string) ($this->cas['base_url'] ?? ''),
             'CAS_LOGOUT_URL' => (string) ($this->cas['logout_url'] ?? ''),
             'CAS_HOST' => (string) ($this->cas['host'] ?? ''),
