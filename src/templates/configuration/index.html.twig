@@ -88,7 +88,7 @@
     <div class="d-flex align-items-start justify-content-between gap-3 mb-4 flex-wrap">
         <div>
             <h1 class="page-title mb-1">Configuration globale</h1>
-            <p class="small text-muted mb-0">Parametres Organisation, theme, CAS, SAML2 et S3 charges depuis Symfony et les variables d'environnement.</p>
+            <p class="small text-muted mb-0">Parametres Organisation, theme, authentification, SAML2 et S3 charges depuis Symfony et les variables d'environnement.</p>
         </div>
         <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bx bx-arrow-back" aria-hidden="true"></i>
@@ -150,8 +150,29 @@
         </fieldset>
 
         <fieldset class="admin-config-fieldset">
+            <legend>Authentification locale</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="local_admin_username">Login administrateur</label>
+                    <input class="form-control" id="local_admin_username" name="local[admin_username]" value="{{ formValues.local.admin_username }}">
+                </div>
+                <div>
+                    <label class="form-label" for="local_admin_password">Mot de passe administrateur</label>
+                    <input class="form-control" id="local_admin_password" name="local[admin_password]" type="password" autocomplete="new-password" placeholder="Laisser vide pour conserver">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="admin-config-fieldset">
             <legend>CAS</legend>
             <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="cas_enabled">Actif</label>
+                    <select class="form-select" id="cas_enabled" name="cas[enabled]">
+                        <option value="0" {{ formValues.cas.enabled == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.cas.enabled == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
                 <div>
                     <label class="form-label" for="cas_base_url">URL de base</label>
                     <input class="form-control" id="cas_base_url" name="cas[base_url]" value="{{ formValues.cas.base_url }}">
@@ -187,6 +208,62 @@
         </fieldset>
 
         <fieldset class="admin-config-fieldset">
+            <legend>LDAP</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="ldap_enabled">Actif</label>
+                    <select class="form-select" id="ldap_enabled" name="ldap[enabled]">
+                        <option value="0" {{ formValues.ldap.enabled == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.ldap.enabled == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_connection_string">Connexion</label>
+                    <input class="form-control" id="ldap_connection_string" name="ldap[connection_string]" value="{{ formValues.ldap.connection_string }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_base_dn">Base DN</label>
+                    <input class="form-control" id="ldap_base_dn" name="ldap[base_dn]" value="{{ formValues.ldap.base_dn }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_search_filter">Filtre de recherche</label>
+                    <input class="form-control" id="ldap_search_filter" name="ldap[search_filter]" value="{{ formValues.ldap.search_filter }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_bind_dn">Bind DN</label>
+                    <input class="form-control" id="ldap_bind_dn" name="ldap[bind_dn]" value="{{ formValues.ldap.bind_dn }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_bind_password">Bind password</label>
+                    <input class="form-control" id="ldap_bind_password" name="ldap[bind_password]" type="password" autocomplete="new-password" placeholder="Laisser vide pour conserver">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_identifier_attribute">Attribut identifiant</label>
+                    <input class="form-control" id="ldap_identifier_attribute" name="ldap[identifier_attribute]" value="{{ formValues.ldap.identifier_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_email_attribute">Attribut email</label>
+                    <input class="form-control" id="ldap_email_attribute" name="ldap[email_attribute]" value="{{ formValues.ldap.email_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_first_name_attribute">Attribut prenom</label>
+                    <input class="form-control" id="ldap_first_name_attribute" name="ldap[first_name_attribute]" value="{{ formValues.ldap.first_name_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_last_name_attribute">Attribut nom</label>
+                    <input class="form-control" id="ldap_last_name_attribute" name="ldap[last_name_attribute]" value="{{ formValues.ldap.last_name_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="ldap_auto_create_user">Creation utilisateur auto</label>
+                    <select class="form-select" id="ldap_auto_create_user" name="ldap[auto_create_user]">
+                        <option value="0" {{ formValues.ldap.auto_create_user == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.ldap.auto_create_user == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="admin-config-fieldset">
             <legend>SAML2</legend>
             <div class="admin-config-fields">
                 <div>
@@ -194,6 +271,112 @@
                     <select class="form-select" id="saml2_enabled" name="saml2[enabled]">
                         <option value="0" {{ formValues.saml2.enabled == '0' ? 'selected' : '' }}>Non</option>
                         <option value="1" {{ formValues.saml2.enabled == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_strict">Strict</label>
+                    <select class="form-select" id="saml2_strict" name="saml2[strict]">
+                        <option value="0" {{ formValues.saml2.strict == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.strict == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_debug">Debug</label>
+                    <select class="form-select" id="saml2_debug" name="saml2[debug]">
+                        <option value="0" {{ formValues.saml2.debug == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.debug == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_sp_entity_id">SP entity ID</label>
+                    <input class="form-control" id="saml2_sp_entity_id" name="saml2[sp_entity_id]" value="{{ formValues.saml2.sp_entity_id }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_sp_acs_url">SP ACS URL</label>
+                    <input class="form-control" id="saml2_sp_acs_url" name="saml2[sp_acs_url]" value="{{ formValues.saml2.sp_acs_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_sp_sls_url">SP SLS URL</label>
+                    <input class="form-control" id="saml2_sp_sls_url" name="saml2[sp_sls_url]" value="{{ formValues.saml2.sp_sls_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_sp_name_id_format">SP NameID format</label>
+                    <input class="form-control" id="saml2_sp_name_id_format" name="saml2[sp_name_id_format]" value="{{ formValues.saml2.sp_name_id_format }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_metadata_file">IdP metadata file</label>
+                    <input class="form-control" id="saml2_idp_metadata_file" name="saml2[idp_metadata_file]" value="{{ formValues.saml2.idp_metadata_file }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_metadata_url">IdP metadata URL</label>
+                    <input class="form-control" id="saml2_idp_metadata_url" name="saml2[idp_metadata_url]" value="{{ formValues.saml2.idp_metadata_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_entity_id">IdP entity ID</label>
+                    <input class="form-control" id="saml2_idp_entity_id" name="saml2[idp_entity_id]" value="{{ formValues.saml2.idp_entity_id }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_sso_url">IdP SSO URL</label>
+                    <input class="form-control" id="saml2_idp_sso_url" name="saml2[idp_sso_url]" value="{{ formValues.saml2.idp_sso_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_slo_url">IdP SLO URL</label>
+                    <input class="form-control" id="saml2_idp_slo_url" name="saml2[idp_slo_url]" value="{{ formValues.saml2.idp_slo_url }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_authn_requests_signed">AuthnRequest signee</label>
+                    <select class="form-select" id="saml2_authn_requests_signed" name="saml2[authn_requests_signed]">
+                        <option value="0" {{ formValues.saml2.authn_requests_signed == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.authn_requests_signed == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_logout_request_signed">LogoutRequest signee</label>
+                    <select class="form-select" id="saml2_logout_request_signed" name="saml2[logout_request_signed]">
+                        <option value="0" {{ formValues.saml2.logout_request_signed == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.logout_request_signed == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_logout_response_signed">LogoutResponse signee</label>
+                    <select class="form-select" id="saml2_logout_response_signed" name="saml2[logout_response_signed]">
+                        <option value="0" {{ formValues.saml2.logout_response_signed == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.logout_response_signed == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_want_messages_signed">Messages signes requis</label>
+                    <select class="form-select" id="saml2_want_messages_signed" name="saml2[want_messages_signed]">
+                        <option value="0" {{ formValues.saml2.want_messages_signed == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.want_messages_signed == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_want_assertions_signed">Assertions signees requises</label>
+                    <select class="form-select" id="saml2_want_assertions_signed" name="saml2[want_assertions_signed]">
+                        <option value="0" {{ formValues.saml2.want_assertions_signed == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.want_assertions_signed == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_want_assertions_encrypted">Assertions chiffrees requises</label>
+                    <select class="form-select" id="saml2_want_assertions_encrypted" name="saml2[want_assertions_encrypted]">
+                        <option value="0" {{ formValues.saml2.want_assertions_encrypted == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.want_assertions_encrypted == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_want_name_id_encrypted">NameID chiffre requis</label>
+                    <select class="form-select" id="saml2_want_name_id_encrypted" name="saml2[want_name_id_encrypted]">
+                        <option value="0" {{ formValues.saml2.want_name_id_encrypted == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.want_name_id_encrypted == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_sign_metadata">Metadata signee</label>
+                    <select class="form-select" id="saml2_sign_metadata" name="saml2[sign_metadata]">
+                        <option value="0" {{ formValues.saml2.sign_metadata == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.sign_metadata == '1' ? 'selected' : '' }}>Oui</option>
                     </select>
                 </div>
                 <div>
@@ -213,19 +396,29 @@
                     <input class="form-control" id="saml2_last_name_attribute" name="saml2[last_name_attribute]" value="{{ formValues.saml2.last_name_attribute }}">
                 </div>
                 <div>
-                    <label class="form-label" for="saml2_default_email_domain">Domaine email par defaut</label>
-                    <input class="form-control" id="saml2_default_email_domain" name="saml2[default_email_domain]" value="{{ formValues.saml2.default_email_domain }}">
-                </div>
-                <div>
                     <label class="form-label" for="saml2_auto_create_user">Creation utilisateur auto</label>
                     <select class="form-select" id="saml2_auto_create_user" name="saml2[auto_create_user]">
                         <option value="0" {{ formValues.saml2.auto_create_user == '0' ? 'selected' : '' }}>Non</option>
                         <option value="1" {{ formValues.saml2.auto_create_user == '1' ? 'selected' : '' }}>Oui</option>
                     </select>
                 </div>
+            </div>
+            <div class="admin-config-fields mt-3">
                 <div>
-                    <label class="form-label" for="saml2_login_url">URL de connexion</label>
-                    <input class="form-control" id="saml2_login_url" name="saml2[login_url]" value="{{ formValues.saml2.login_url }}">
+                    <label class="form-label" for="saml2_sp_x509_cert">SP certificat</label>
+                    <textarea class="form-control" id="saml2_sp_x509_cert" name="saml2[sp_x509_cert]" rows="4" placeholder="Laisser vide pour conserver"></textarea>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_sp_private_key">SP cle privee</label>
+                    <textarea class="form-control" id="saml2_sp_private_key" name="saml2[sp_private_key]" rows="4" placeholder="Laisser vide pour conserver"></textarea>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_metadata_xml">IdP metadata XML</label>
+                    <textarea class="form-control" id="saml2_idp_metadata_xml" name="saml2[idp_metadata_xml]" rows="4" placeholder="Laisser vide pour conserver"></textarea>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_idp_x509_cert">IdP certificat</label>
+                    <textarea class="form-control" id="saml2_idp_x509_cert" name="saml2[idp_x509_cert]" rows="4" placeholder="Laisser vide pour conserver"></textarea>
                 </div>
             </div>
         </fieldset>

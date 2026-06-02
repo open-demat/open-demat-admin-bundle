@@ -51,7 +51,9 @@ final class AdminController extends AbstractController
         $values = $configuration->currentValues();
         $organization = $request->request->all('organization');
         $theme = $request->request->all('theme');
+        $local = $request->request->all('local');
         $cas = $request->request->all('cas');
+        $ldap = $request->request->all('ldap');
         $saml2 = $request->request->all('saml2');
         $s3 = $request->request->all('s3');
 
@@ -108,25 +110,70 @@ final class AdminController extends AbstractController
             }
         }
 
+        $adminUsername = trim((string) ($local['admin_username'] ?? ''));
+        $values['LOCAL_ADMIN_USERNAME'] = $adminUsername !== '' ? $adminUsername : 'admin';
+        $adminPassword = trim((string) ($local['admin_password'] ?? ''));
+        if ($adminPassword !== '') {
+            $values['LOCAL_ADMIN_PASSWORD'] = $adminPassword;
+        }
+
+        $values['CAS_ENABLED'] = $this->booleanEnv($cas['enabled'] ?? '0');
         $values['CAS_BASE_URL'] = trim((string) ($cas['base_url'] ?? ''));
         $values['CAS_LOGOUT_URL'] = trim((string) ($cas['logout_url'] ?? ''));
         $values['CAS_HOST'] = trim((string) ($cas['host'] ?? ''));
         $values['CAS_PORT'] = trim((string) ($cas['port'] ?? ''));
         $values['CAS_PATH'] = trim((string) ($cas['path'] ?? ''));
         $values['CAS_LOGIN_TARGET'] = trim((string) ($cas['login_target'] ?? ''));
-        $values['CAS_GATEWAY'] = ((string) ($cas['gateway'] ?? '0')) === '1' ? '1' : '0';
-        $values['SAML2_ENABLED'] = ((string) ($saml2['enabled'] ?? '0')) === '1' ? '1' : '0';
-        $values['SAML2_IDENTIFIER_ATTRIBUTE'] = trim((string) ($saml2['identifier_attribute'] ?? 'REMOTE_USER'));
+        $values['CAS_GATEWAY'] = $this->booleanEnv($cas['gateway'] ?? '0');
+
+        $values['LDAP_ENABLED'] = $this->booleanEnv($ldap['enabled'] ?? '0');
+        $values['LDAP_CONNECTION_STRING'] = trim((string) ($ldap['connection_string'] ?? 'ldap://localhost:389'));
+        $values['LDAP_BASE_DN'] = trim((string) ($ldap['base_dn'] ?? 'dc=example,dc=org'));
+        $values['LDAP_SEARCH_FILTER'] = trim((string) ($ldap['search_filter'] ?? '(uid=%s)'));
+        $values['LDAP_BIND_DN'] = trim((string) ($ldap['bind_dn'] ?? ''));
+        $ldapBindPassword = trim((string) ($ldap['bind_password'] ?? ''));
+        if ($ldapBindPassword !== '') {
+            $values['LDAP_BIND_PASSWORD'] = $ldapBindPassword;
+        }
+        $values['LDAP_IDENTIFIER_ATTRIBUTE'] = trim((string) ($ldap['identifier_attribute'] ?? 'uid'));
+        $values['LDAP_EMAIL_ATTRIBUTE'] = trim((string) ($ldap['email_attribute'] ?? 'mail'));
+        $values['LDAP_FIRST_NAME_ATTRIBUTE'] = trim((string) ($ldap['first_name_attribute'] ?? 'givenName'));
+        $values['LDAP_LAST_NAME_ATTRIBUTE'] = trim((string) ($ldap['last_name_attribute'] ?? 'sn'));
+        $values['LDAP_AUTO_CREATE_USER'] = $this->booleanEnv($ldap['auto_create_user'] ?? '0');
+
+        $values['SAML2_ENABLED'] = $this->booleanEnv($saml2['enabled'] ?? '0');
+        $values['SAML2_STRICT'] = $this->booleanEnv($saml2['strict'] ?? '1');
+        $values['SAML2_DEBUG'] = $this->booleanEnv($saml2['debug'] ?? '0');
+        $values['SAML2_SP_ENTITY_ID'] = trim((string) ($saml2['sp_entity_id'] ?? ''));
+        $values['SAML2_SP_ACS_URL'] = trim((string) ($saml2['sp_acs_url'] ?? ''));
+        $values['SAML2_SP_SLS_URL'] = trim((string) ($saml2['sp_sls_url'] ?? ''));
+        $values['SAML2_SP_NAME_ID_FORMAT'] = trim((string) ($saml2['sp_name_id_format'] ?? 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'));
+        $this->replaceWhenFilled($values, 'SAML2_SP_X509_CERT', $saml2['sp_x509_cert'] ?? '');
+        $this->replaceWhenFilled($values, 'SAML2_SP_PRIVATE_KEY', $saml2['sp_private_key'] ?? '');
+        $values['SAML2_IDP_METADATA_FILE'] = trim((string) ($saml2['idp_metadata_file'] ?? ''));
+        $values['SAML2_IDP_METADATA_URL'] = trim((string) ($saml2['idp_metadata_url'] ?? ''));
+        $this->replaceWhenFilled($values, 'SAML2_IDP_METADATA_XML', $saml2['idp_metadata_xml'] ?? '');
+        $values['SAML2_IDP_ENTITY_ID'] = trim((string) ($saml2['idp_entity_id'] ?? ''));
+        $values['SAML2_IDP_SSO_URL'] = trim((string) ($saml2['idp_sso_url'] ?? ''));
+        $values['SAML2_IDP_SLO_URL'] = trim((string) ($saml2['idp_slo_url'] ?? ''));
+        $this->replaceWhenFilled($values, 'SAML2_IDP_X509_CERT', $saml2['idp_x509_cert'] ?? '');
+        $values['SAML2_AUTHN_REQUESTS_SIGNED'] = $this->booleanEnv($saml2['authn_requests_signed'] ?? '0');
+        $values['SAML2_LOGOUT_REQUEST_SIGNED'] = $this->booleanEnv($saml2['logout_request_signed'] ?? '0');
+        $values['SAML2_LOGOUT_RESPONSE_SIGNED'] = $this->booleanEnv($saml2['logout_response_signed'] ?? '0');
+        $values['SAML2_WANT_MESSAGES_SIGNED'] = $this->booleanEnv($saml2['want_messages_signed'] ?? '0');
+        $values['SAML2_WANT_ASSERTIONS_SIGNED'] = $this->booleanEnv($saml2['want_assertions_signed'] ?? '0');
+        $values['SAML2_WANT_ASSERTIONS_ENCRYPTED'] = $this->booleanEnv($saml2['want_assertions_encrypted'] ?? '0');
+        $values['SAML2_WANT_NAME_ID_ENCRYPTED'] = $this->booleanEnv($saml2['want_name_id_encrypted'] ?? '0');
+        $values['SAML2_SIGN_METADATA'] = $this->booleanEnv($saml2['sign_metadata'] ?? '0');
+        $values['SAML2_IDENTIFIER_ATTRIBUTE'] = trim((string) ($saml2['identifier_attribute'] ?? 'uid'));
         $values['SAML2_EMAIL_ATTRIBUTE'] = trim((string) ($saml2['email_attribute'] ?? 'mail'));
         $values['SAML2_FIRST_NAME_ATTRIBUTE'] = trim((string) ($saml2['first_name_attribute'] ?? 'givenName'));
         $values['SAML2_LAST_NAME_ATTRIBUTE'] = trim((string) ($saml2['last_name_attribute'] ?? 'sn'));
-        $values['SAML2_DEFAULT_EMAIL_DOMAIN'] = trim((string) ($saml2['default_email_domain'] ?? ''));
-        $values['SAML2_AUTO_CREATE_USER'] = ((string) ($saml2['auto_create_user'] ?? '0')) === '1' ? '1' : '0';
-        $values['SAML2_LOGIN_URL'] = trim((string) ($saml2['login_url'] ?? ''));
+        $values['SAML2_AUTO_CREATE_USER'] = $this->booleanEnv($saml2['auto_create_user'] ?? '0');
         $values['S3_ENDPOINT'] = trim((string) ($s3['endpoint'] ?? ''));
         $values['S3_REGION'] = trim((string) ($s3['region'] ?? ''));
         $values['S3_BUCKET'] = trim((string) ($s3['bucket'] ?? ''));
-        $values['S3_USE_PATH_STYLE'] = ((string) ($s3['use_path_style'] ?? '0')) === '1' ? '1' : '0';
+        $values['S3_USE_PATH_STYLE'] = $this->booleanEnv($s3['use_path_style'] ?? '0');
 
         $accessKey = trim((string) ($s3['access_key'] ?? ''));
         if ($accessKey !== '') {
@@ -160,6 +207,22 @@ final class AdminController extends AbstractController
         $value = trim($value);
 
         return preg_match('/^#[0-9A-Fa-f]{6}$/', $value) === 1 ? strtoupper($value) : $fallback;
+    }
+
+    private function booleanEnv(mixed $value): string
+    {
+        return ((string) $value) === '1' ? '1' : '0';
+    }
+
+    /**
+     * @param array<string, string> $values
+     */
+    private function replaceWhenFilled(array &$values, string $key, mixed $value): void
+    {
+        $value = trim((string) $value);
+        if ($value !== '') {
+            $values[$key] = $value;
+        }
     }
 
     private function removePreviousLogoAssets(string $projectDir): void
