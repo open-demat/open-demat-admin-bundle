@@ -42,7 +42,7 @@
                 <label class="form-label">Nom affiché</label>
                 <input type="text" name="originalName" class="form-control" value="{{ d.originalName }}" required>
                 <div class="form-text">
-                  Modifie la métadonnée en base. (Le contenu MinIO ne change pas tant que tu n’uploades pas un fichier.)
+                  Modifie la métadonnée en base. (Le contenu S3 ne change pas tant que tu n’uploades pas un fichier.)
                 </div>
               </div>
 
@@ -51,7 +51,7 @@
                 <input type="file" name="file" class="form-control"
                        accept=".pdf,image/*">
                 <div class="form-text">
-                  Si tu sélectionnes un fichier : il remplace le contenu MinIO de ce document (même UUID).
+                  Si tu sélectionnes un fichier : il remplace le contenu S3 de ce document (même UUID).
                   Les métadonnées (mime, taille, checksum, uploadedBy) seront mises à jour.
                 </div>
               </div>

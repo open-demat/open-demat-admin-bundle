@@ -12,6 +12,8 @@ services:
     arguments:
       $organizationName: '%open_demat_admin.organization.name%'
       $organizationLogo: '%open_demat_admin.organization.logo%'
+      $themePrimaryColor: '%open_demat_admin.theme.primary_color%'
+      $themePrimaryDarkColor: '%open_demat_admin.theme.primary_dark_color%'
     tags: ['twig.extension']
 
   OpenDemat\AdminBundle\Service\AdminGlobalConfiguration:
@@ -30,6 +32,15 @@ services:
         path: '%open_demat_admin.cas.path%'
         login_target: '%open_demat_admin.cas.login_target%'
         gateway: '%open_demat_admin.cas.gateway%'
+      $saml2:
+        enabled: '%open_demat_admin.saml2.enabled%'
+        identifier_attribute: '%open_demat_admin.saml2.identifier_attribute%'
+        email_attribute: '%open_demat_admin.saml2.email_attribute%'
+        first_name_attribute: '%open_demat_admin.saml2.first_name_attribute%'
+        last_name_attribute: '%open_demat_admin.saml2.last_name_attribute%'
+        default_email_domain: '%open_demat_admin.saml2.default_email_domain%'
+        auto_create_user: '%open_demat_admin.saml2.auto_create_user%'
+        login_url: '%open_demat_admin.saml2.login_url%'
       $s3:
         endpoint: '%open_demat_admin.s3.endpoint%'
         region: '%open_demat_admin.s3.region%'

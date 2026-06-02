@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin')]
 final class AdminController extends AbstractController
 {
+    private const DEFAULT_THEME_PRIMARY_COLOR = '#E30613';
+    private const DEFAULT_THEME_PRIMARY_DARK_COLOR = '#15202B';
     private const ORGANIZATION_LOGO_CODE = 'open_demat.organization_logo';
     private const ORGANIZATION_LOGO_ASSET_BASENAME = 'organization-logo';
     private const ORGANIZATION_LOGO_ASSET_DIR = 'assets/generated';
@@ -50,14 +52,31 @@ final class AdminController extends AbstractController
         $organization = $request->request->all('organization');
         $theme = $request->request->all('theme');
         $cas = $request->request->all('cas');
+        $saml2 = $request->request->all('saml2');
         $s3 = $request->request->all('s3');
 
         $values['ORGANIZATION_NAME'] = trim((string) ($organization['name'] ?? ''));
-        $values['THEME_PRIMARY_COLOR'] = $this->sanitizeHexColor((string) ($theme['primary_color'] ?? ''), '#E42535');
-        $values['THEME_PRIMARY_DARK_COLOR'] = $this->sanitizeHexColor((string) ($theme['primary_dark_color'] ?? ''), '#B51E2A');
+        if ($request->request->getBoolean('reset_theme')) {
+            $values['THEME_PRIMARY_COLOR'] = self::DEFAULT_THEME_PRIMARY_COLOR;
+            $values['THEME_PRIMARY_DARK_COLOR'] = self::DEFAULT_THEME_PRIMARY_DARK_COLOR;
+        } else {
+            $values['THEME_PRIMARY_COLOR'] = $this->sanitizeHexColor((string) ($theme['primary_color'] ?? ''), self::DEFAULT_THEME_PRIMARY_COLOR);
+            $values['THEME_PRIMARY_DARK_COLOR'] = $this->sanitizeHexColor((string) ($theme['primary_dark_color'] ?? ''), self::DEFAULT_THEME_PRIMARY_DARK_COLOR);
+        }
 
+        $deleteLogo = $request->request->getBoolean('delete_logo');
         $logo = $request->files->get('organization_logo');
-        if ($logo instanceof UploadedFile) {
+        if ($deleteLogo) {
+            try {
+                $staticDocuments->deactivateByCode(self::ORGANIZATION_LOGO_CODE);
+                $this->removePreviousLogoAssets((string) $this->getParameter('kernel.project_dir'));
+                $values['ORGANIZATION_LOGO'] = 'assets/img/open-demat-logo.png';
+            } catch (\Throwable $exception) {
+                $this->addFlash('danger', 'Logo non supprimé : ' . $exception->getMessage());
+
+                return $this->redirectToRoute('open_demat_admin_configuration');
+            }
+        } elseif ($logo instanceof UploadedFile) {
             if (!in_array($logo->getClientMimeType(), ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'], true)) {
                 $this->addFlash('danger', 'Le logo doit être une image PNG, JPEG, SVG ou WebP.');
 
@@ -96,19 +115,27 @@ final class AdminController extends AbstractController
         $values['CAS_PATH'] = trim((string) ($cas['path'] ?? ''));
         $values['CAS_LOGIN_TARGET'] = trim((string) ($cas['login_target'] ?? ''));
         $values['CAS_GATEWAY'] = ((string) ($cas['gateway'] ?? '0')) === '1' ? '1' : '0';
-        $values['MINIO_ENDPOINT'] = trim((string) ($s3['endpoint'] ?? ''));
-        $values['MINIO_REGION'] = trim((string) ($s3['region'] ?? ''));
-        $values['MINIO_BUCKET'] = trim((string) ($s3['bucket'] ?? ''));
-        $values['MINIO_USE_PATH_STYLE'] = ((string) ($s3['use_path_style'] ?? '0')) === '1' ? '1' : '0';
+        $values['SAML2_ENABLED'] = ((string) ($saml2['enabled'] ?? '0')) === '1' ? '1' : '0';
+        $values['SAML2_IDENTIFIER_ATTRIBUTE'] = trim((string) ($saml2['identifier_attribute'] ?? 'REMOTE_USER'));
+        $values['SAML2_EMAIL_ATTRIBUTE'] = trim((string) ($saml2['email_attribute'] ?? 'mail'));
+        $values['SAML2_FIRST_NAME_ATTRIBUTE'] = trim((string) ($saml2['first_name_attribute'] ?? 'givenName'));
+        $values['SAML2_LAST_NAME_ATTRIBUTE'] = trim((string) ($saml2['last_name_attribute'] ?? 'sn'));
+        $values['SAML2_DEFAULT_EMAIL_DOMAIN'] = trim((string) ($saml2['default_email_domain'] ?? ''));
+        $values['SAML2_AUTO_CREATE_USER'] = ((string) ($saml2['auto_create_user'] ?? '0')) === '1' ? '1' : '0';
+        $values['SAML2_LOGIN_URL'] = trim((string) ($saml2['login_url'] ?? ''));
+        $values['S3_ENDPOINT'] = trim((string) ($s3['endpoint'] ?? ''));
+        $values['S3_REGION'] = trim((string) ($s3['region'] ?? ''));
+        $values['S3_BUCKET'] = trim((string) ($s3['bucket'] ?? ''));
+        $values['S3_USE_PATH_STYLE'] = ((string) ($s3['use_path_style'] ?? '0')) === '1' ? '1' : '0';
 
         $accessKey = trim((string) ($s3['access_key'] ?? ''));
         if ($accessKey !== '') {
-            $values['MINIO_ACCESS_KEY'] = $accessKey;
+            $values['S3_ACCESS_KEY'] = $accessKey;
         }
 
         $secretKey = trim((string) ($s3['secret_key'] ?? ''));
         if ($secretKey !== '') {
-            $values['MINIO_SECRET_KEY'] = $secretKey;
+            $values['S3_SECRET_KEY'] = $secretKey;
         }
 
         $writer->save($values);

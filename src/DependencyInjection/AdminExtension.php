@@ -27,6 +27,14 @@ class AdminExtension extends ConfigurableExtension
         $container->setParameter('open_demat_admin.cas.path', $mergedConfig['cas']['path']);
         $container->setParameter('open_demat_admin.cas.login_target', $mergedConfig['cas']['login_target']);
         $container->setParameter('open_demat_admin.cas.gateway', $mergedConfig['cas']['gateway']);
+        $container->setParameter('open_demat_admin.saml2.enabled', $mergedConfig['saml2']['enabled']);
+        $container->setParameter('open_demat_admin.saml2.identifier_attribute', $mergedConfig['saml2']['identifier_attribute']);
+        $container->setParameter('open_demat_admin.saml2.email_attribute', $mergedConfig['saml2']['email_attribute']);
+        $container->setParameter('open_demat_admin.saml2.first_name_attribute', $mergedConfig['saml2']['first_name_attribute']);
+        $container->setParameter('open_demat_admin.saml2.last_name_attribute', $mergedConfig['saml2']['last_name_attribute']);
+        $container->setParameter('open_demat_admin.saml2.default_email_domain', $mergedConfig['saml2']['default_email_domain']);
+        $container->setParameter('open_demat_admin.saml2.auto_create_user', $mergedConfig['saml2']['auto_create_user']);
+        $container->setParameter('open_demat_admin.saml2.login_url', $mergedConfig['saml2']['login_url']);
         $container->setParameter('open_demat_admin.s3.endpoint', $mergedConfig['s3']['endpoint']);
         $container->setParameter('open_demat_admin.s3.region', $mergedConfig['s3']['region']);
         $container->setParameter('open_demat_admin.s3.bucket', $mergedConfig['s3']['bucket']);

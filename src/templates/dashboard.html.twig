@@ -63,7 +63,7 @@
 
 {% block body %}
 {% set orgName = open_demat_admin_organization_name|default(organization_name|default('Open Demat')) %}
-{% set orgLogo = open_demat_admin_organization_logo|default(organization_logo|default('')) %}
+{% set orgLogo = open_demat_admin_organization_logo|default(organization_logo|default('assets/img/open-demat-logo.png')) %}
 {% set phpEnvironment = app.request.server.get('APP_ENV')|default(app.environment|default('dev')) %}
 <div class="container-fluid admin-home">
 
@@ -189,7 +189,7 @@
                         <div>
                             <h3>Configuration globale</h3>
                             <p>
-                                Consulter et modifier les paramètres Organisation, CAS et S3/MinIO utilisés par la
+                                Consulter et modifier les paramètres Organisation, CAS et S3 utilisés par la
                                 plateforme.
                             </p>
                         </div>

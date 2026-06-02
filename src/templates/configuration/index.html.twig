@@ -18,11 +18,14 @@
         gap: 1rem;
         margin-bottom: 1.5rem;
       }
-      .admin-config-fieldset {
+      .admin-config-fieldset,
+      .admin-config-card {
         border: 1px solid var(--border, #dee2e6);
         border-radius: .5rem;
-        padding: 1rem;
         background: #fff;
+      }
+      .admin-config-fieldset {
+        padding: 1rem;
       }
       .admin-config-fieldset legend {
         float: none;
@@ -38,9 +41,6 @@
         gap: .85rem;
       }
       .admin-config-card {
-        border: 1px solid var(--border, #dee2e6);
-        border-radius: .5rem;
-        background: #fff;
         overflow: hidden;
       }
       .admin-config-card h2 {
@@ -49,10 +49,6 @@
         padding: .9rem 1rem;
         border-bottom: 1px solid var(--border, #dee2e6);
         background: #f8f9fa;
-      }
-      .admin-config-list {
-        display: grid;
-        gap: 0;
       }
       .admin-config-row {
         display: grid;
@@ -92,7 +88,7 @@
     <div class="d-flex align-items-start justify-content-between gap-3 mb-4 flex-wrap">
         <div>
             <h1 class="page-title mb-1">Configuration globale</h1>
-            <p class="small text-muted mb-0">Paramètres Organisation, CAS et S3/MinIO chargés depuis la configuration Symfony et les variables d'environnement.</p>
+            <p class="small text-muted mb-0">Parametres Organisation, theme, CAS, SAML2 et S3 charges depuis Symfony et les variables d'environnement.</p>
         </div>
         <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bx bx-arrow-back" aria-hidden="true"></i>
@@ -127,22 +123,30 @@
                             Logo actuel : <a href="{{ asset(formValues.organization.logo) }}" target="_blank" rel="noopener">ouvrir</a>
                         </div>
                     {% endif %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm mt-2" name="delete_logo" value="1" formnovalidate>
+                        <i class="bx bx-trash" aria-hidden="true"></i>
+                        Revenir au logo par defaut
+                    </button>
                 </div>
             </div>
         </fieldset>
 
         <fieldset class="admin-config-fieldset">
-            <legend>Thème</legend>
+            <legend>Theme</legend>
             <div class="admin-config-fields">
                 <div>
                     <label class="form-label" for="theme_primary_color">Couleur principale</label>
-                    <input class="form-control form-control-color" id="theme_primary_color" name="theme[primary_color]" type="color" value="{{ formValues.theme.primary_color|default('#E42535') }}">
+                    <input class="form-control form-control-color" id="theme_primary_color" name="theme[primary_color]" type="color" value="{{ formValues.theme.primary_color|default('#E30613') }}">
                 </div>
                 <div>
-                    <label class="form-label" for="theme_primary_dark_color">Couleur principale foncée</label>
-                    <input class="form-control form-control-color" id="theme_primary_dark_color" name="theme[primary_dark_color]" type="color" value="{{ formValues.theme.primary_dark_color|default('#B51E2A') }}">
+                    <label class="form-label" for="theme_primary_dark_color">Couleur principale foncee</label>
+                    <input class="form-control form-control-color" id="theme_primary_dark_color" name="theme[primary_dark_color]" type="color" value="{{ formValues.theme.primary_dark_color|default('#15202B') }}">
                 </div>
             </div>
+            <button type="submit" class="btn btn-outline-secondary btn-sm mt-3" name="reset_theme" value="1" formnovalidate>
+                <i class="bx bx-reset" aria-hidden="true"></i>
+                Revenir au theme par defaut
+            </button>
         </fieldset>
 
         <fieldset class="admin-config-fieldset">
@@ -153,11 +157,11 @@
                     <input class="form-control" id="cas_base_url" name="cas[base_url]" value="{{ formValues.cas.base_url }}">
                 </div>
                 <div>
-                    <label class="form-label" for="cas_logout_url">URL de déconnexion</label>
+                    <label class="form-label" for="cas_logout_url">URL de deconnexion</label>
                     <input class="form-control" id="cas_logout_url" name="cas[logout_url]" value="{{ formValues.cas.logout_url }}">
                 </div>
                 <div>
-                    <label class="form-label" for="cas_host">Hôte</label>
+                    <label class="form-label" for="cas_host">Hote</label>
                     <input class="form-control" id="cas_host" name="cas[host]" value="{{ formValues.cas.host }}">
                 </div>
                 <div>
@@ -183,14 +187,58 @@
         </fieldset>
 
         <fieldset class="admin-config-fieldset">
-            <legend>S3 / MinIO</legend>
+            <legend>SAML2</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="saml2_enabled">Actif</label>
+                    <select class="form-select" id="saml2_enabled" name="saml2[enabled]">
+                        <option value="0" {{ formValues.saml2.enabled == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.enabled == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_identifier_attribute">Attribut identifiant</label>
+                    <input class="form-control" id="saml2_identifier_attribute" name="saml2[identifier_attribute]" value="{{ formValues.saml2.identifier_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_email_attribute">Attribut email</label>
+                    <input class="form-control" id="saml2_email_attribute" name="saml2[email_attribute]" value="{{ formValues.saml2.email_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_first_name_attribute">Attribut prenom</label>
+                    <input class="form-control" id="saml2_first_name_attribute" name="saml2[first_name_attribute]" value="{{ formValues.saml2.first_name_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_last_name_attribute">Attribut nom</label>
+                    <input class="form-control" id="saml2_last_name_attribute" name="saml2[last_name_attribute]" value="{{ formValues.saml2.last_name_attribute }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_default_email_domain">Domaine email par defaut</label>
+                    <input class="form-control" id="saml2_default_email_domain" name="saml2[default_email_domain]" value="{{ formValues.saml2.default_email_domain }}">
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_auto_create_user">Creation utilisateur auto</label>
+                    <select class="form-select" id="saml2_auto_create_user" name="saml2[auto_create_user]">
+                        <option value="0" {{ formValues.saml2.auto_create_user == '0' ? 'selected' : '' }}>Non</option>
+                        <option value="1" {{ formValues.saml2.auto_create_user == '1' ? 'selected' : '' }}>Oui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="saml2_login_url">URL de connexion</label>
+                    <input class="form-control" id="saml2_login_url" name="saml2[login_url]" value="{{ formValues.saml2.login_url }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="admin-config-fieldset">
+            <legend>S3</legend>
             <div class="admin-config-fields">
                 <div>
                     <label class="form-label" for="s3_endpoint">Endpoint</label>
                     <input class="form-control" id="s3_endpoint" name="s3[endpoint]" value="{{ formValues.s3.endpoint }}">
                 </div>
                 <div>
-                    <label class="form-label" for="s3_region">Région</label>
+                    <label class="form-label" for="s3_region">Region</label>
                     <input class="form-control" id="s3_region" name="s3[region]" value="{{ formValues.s3.region }}">
                 </div>
                 <div>
@@ -227,15 +275,13 @@
         {% for title, rows in sections %}
             <section class="admin-config-card" aria-labelledby="config-section-{{ loop.index }}">
                 <h2 id="config-section-{{ loop.index }}">{{ title }}</h2>
-                <div class="admin-config-list">
+                <div>
                     {% for row in rows %}
                         <div class="admin-config-row">
                             <div class="admin-config-label">{{ row.label }}</div>
                             <div class="admin-config-value">
                                 {% if row.value is same as('') or row.value is null %}
-                                    <span class="admin-config-empty">Non renseigné</span>
-                                {% elseif row.secret|default(false) %}
-                                    {{ row.value }}
+                                    <span class="admin-config-empty">Non renseigne</span>
                                 {% else %}
                                     {{ row.value }}
                                 {% endif %}
