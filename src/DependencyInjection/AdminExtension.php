@@ -36,6 +36,8 @@ class AdminExtension extends ConfigurableExtension implements PrependExtensionIn
         $container->setParameter('open_demat_admin.theme.primary_dark_color', $mergedConfig['theme']['primary_dark_color']);
         $container->setParameter('open_demat_admin.local.admin_username', $mergedConfig['local']['admin_username']);
         $container->setParameter('open_demat_admin.local.admin_password', $mergedConfig['local']['admin_password']);
+        $container->setParameter('open_demat_admin.mailer.dsn', $mergedConfig['mailer']['dsn']);
+        $container->setParameter('open_demat_admin.mailer.from', $mergedConfig['mailer']['from']);
         $container->setParameter('open_demat_admin.cas.enabled', $mergedConfig['cas']['enabled']);
         $container->setParameter('open_demat_admin.cas.base_url', $mergedConfig['cas']['base_url']);
         $container->setParameter('open_demat_admin.cas.logout_url', $mergedConfig['cas']['logout_url']);

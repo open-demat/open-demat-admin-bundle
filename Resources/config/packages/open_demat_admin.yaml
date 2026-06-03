@@ -8,6 +8,9 @@ open_demat_admin:
   local:
     admin_username: '%env(default::LOCAL_ADMIN_USERNAME)%'
     admin_password: '%env(default::LOCAL_ADMIN_PASSWORD)%'
+  mailer:
+    dsn: '%env(default::MAILER_DSN)%'
+    from: '%env(default::MAILER_FROM)%'
   cas:
     enabled: '%env(default::CAS_ENABLED)%'
     base_url: '%env(default::CAS_BASE_URL)%'

@@ -8,6 +8,7 @@ final class AdminGlobalConfiguration
      * @param array<string, mixed> $organization
      * @param array<string, mixed> $theme
      * @param array<string, mixed> $local
+     * @param array<string, mixed> $mailer
      * @param array<string, mixed> $cas
      * @param array<string, mixed> $ldap
      * @param array<string, mixed> $saml2
@@ -17,6 +18,7 @@ final class AdminGlobalConfiguration
         private readonly array $organization,
         private readonly array $theme,
         private readonly array $local,
+        private readonly array $mailer,
         private readonly array $cas,
         private readonly array $ldap,
         private readonly array $saml2,
@@ -41,6 +43,10 @@ final class AdminGlobalConfiguration
             'Authentification locale' => [
                 ['label' => 'Login administrateur', 'value' => $this->local['admin_username'] ?? ''],
                 ['label' => 'Mot de passe administrateur', 'value' => $this->maskValue((string) ($this->local['admin_password'] ?? '')), 'secret' => true],
+            ],
+            'Serveur mail' => [
+                ['label' => 'DSN', 'value' => $this->mailer['dsn'] ?? ''],
+                ['label' => 'Adresse expediteur', 'value' => $this->mailer['from'] ?? ''],
             ],
             'CAS' => [
                 ['label' => 'Active', 'value' => $this->formatBoolean($this->cas['enabled'] ?? false)],
@@ -125,6 +131,10 @@ final class AdminGlobalConfiguration
                 'admin_username' => (string) ($this->local['admin_username'] ?? 'admin'),
                 'admin_password' => '',
             ],
+            'mailer' => [
+                'dsn' => (string) ($this->mailer['dsn'] ?? 'smtp://localhost:1025'),
+                'from' => (string) ($this->mailer['from'] ?? 'noreply@open-demat.example.org'),
+            ],
             'cas' => [
                 'enabled' => $this->formatBooleanValue($this->cas['enabled'] ?? false),
                 'base_url' => (string) ($this->cas['base_url'] ?? ''),
@@ -202,6 +212,8 @@ final class AdminGlobalConfiguration
             'THEME_PRIMARY_DARK_COLOR' => (string) ($this->theme['primary_dark_color'] ?? '#15202B'),
             'LOCAL_ADMIN_USERNAME' => (string) ($this->local['admin_username'] ?? 'admin'),
             'LOCAL_ADMIN_PASSWORD' => (string) ($this->local['admin_password'] ?? 'admin'),
+            'MAILER_DSN' => (string) ($this->mailer['dsn'] ?? 'smtp://localhost:1025'),
+            'MAILER_FROM' => (string) ($this->mailer['from'] ?? 'noreply@open-demat.example.org'),
             'CAS_ENABLED' => $this->formatBooleanValue($this->cas['enabled'] ?? false),
             'CAS_BASE_URL' => (string) ($this->cas['base_url'] ?? ''),
             'CAS_LOGOUT_URL' => (string) ($this->cas['logout_url'] ?? ''),

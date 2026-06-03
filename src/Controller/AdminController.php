@@ -52,6 +52,7 @@ final class AdminController extends AbstractController
         $organization = $request->request->all('organization');
         $theme = $request->request->all('theme');
         $local = $request->request->all('local');
+        $mailer = $request->request->all('mailer');
         $cas = $request->request->all('cas');
         $ldap = $request->request->all('ldap');
         $saml2 = $request->request->all('saml2');
@@ -116,6 +117,9 @@ final class AdminController extends AbstractController
         if ($adminPassword !== '') {
             $values['LOCAL_ADMIN_PASSWORD'] = $adminPassword;
         }
+
+        $values['MAILER_DSN'] = trim((string) ($mailer['dsn'] ?? 'smtp://localhost:1025'));
+        $values['MAILER_FROM'] = trim((string) ($mailer['from'] ?? 'noreply@open-demat.example.org'));
 
         $values['CAS_ENABLED'] = $this->booleanEnv($cas['enabled'] ?? '0');
         $values['CAS_BASE_URL'] = trim((string) ($cas['base_url'] ?? ''));

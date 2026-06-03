@@ -88,7 +88,7 @@
     <div class="d-flex align-items-start justify-content-between gap-3 mb-4 flex-wrap">
         <div>
             <h1 class="page-title mb-1">Configuration globale</h1>
-            <p class="small text-muted mb-0">Parametres Organisation, theme, authentification, SAML2 et S3 charges depuis Symfony et les variables d'environnement.</p>
+            <p class="small text-muted mb-0">Parametres Organisation, theme, authentification, serveur mail, SAML2 et S3 charges depuis Symfony et les variables d'environnement.</p>
         </div>
         <a href="{{ path('open_demat_admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bx bx-arrow-back" aria-hidden="true"></i>
@@ -159,6 +159,21 @@
                 <div>
                     <label class="form-label" for="local_admin_password">Mot de passe administrateur</label>
                     <input class="form-control" id="local_admin_password" name="local[admin_password]" type="password" autocomplete="new-password" placeholder="Laisser vide pour conserver">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="admin-config-fieldset">
+            <legend>Serveur mail</legend>
+            <div class="admin-config-fields">
+                <div>
+                    <label class="form-label" for="mailer_dsn">DSN</label>
+                    <input class="form-control" id="mailer_dsn" name="mailer[dsn]" value="{{ formValues.mailer.dsn }}" placeholder="smtp://localhost:1025">
+                    <div class="form-text">Exemple : smtp://user:password@smtp.example.org:587?encryption=tls</div>
+                </div>
+                <div>
+                    <label class="form-label" for="mailer_from">Adresse expediteur</label>
+                    <input class="form-control" id="mailer_from" name="mailer[from]" type="email" value="{{ formValues.mailer.from }}" placeholder="noreply@open-demat.example.org">
                 </div>
             </div>
         </fieldset>

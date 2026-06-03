@@ -27,6 +27,9 @@ services:
       $local:
         admin_username: '%open_demat_admin.local.admin_username%'
         admin_password: '%open_demat_admin.local.admin_password%'
+      $mailer:
+        dsn: '%open_demat_admin.mailer.dsn%'
+        from: '%open_demat_admin.mailer.from%'
       $cas:
         enabled: '%open_demat_admin.cas.enabled%'
         base_url: '%open_demat_admin.cas.base_url%'
