@@ -4,6 +4,7 @@ namespace OpenDemat\AdminBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use OpenDemat\Core\Entity\User;
+use OpenDemat\Core\Repository\RoleRepository;
 use OpenDemat\Core\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -16,6 +17,7 @@ final class UserAdminController extends AbstractController
 {
     public function __construct(
         private readonly ParameterBagInterface $parameterBag,
+        private readonly ?RoleRepository $roleRepository = null,
     ) {
     }
 
@@ -24,6 +26,14 @@ final class UserAdminController extends AbstractController
      */
     private function getAvailableRoles(): array
     {
+        if ($this->roleRepository !== null) {
+            try {
+                return $this->roleRepository->getFlattenedRoleHierarchy();
+            } catch (\Throwable) {
+                // Keep the admin usable before the role table migration has run.
+            }
+        }
+
         $roles = ['ROLE_USER', 'ROLE_ADMIN'];
 
         if ($this->parameterBag->has('security.role_hierarchy.roles')) {
