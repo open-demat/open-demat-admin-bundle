@@ -83,3 +83,16 @@ open_demat_admin:
 ```
 
 Le `logo` est un chemin d'asset public. S'il est vide, l'interface affiche une icône générique.
+
+## Alignement avec BPM UPEC Admin
+
+Les évolutions génériques du bundle UPEC (jusqu’à `97ce68c`) sont reprises :
+tri, recherche et filtres de la liste des utilisateurs, rôles du registre Core,
+et téléchargement sécurisé des pièces jointes (`application/octet-stream`,
+`attachment`, `nosniff`, cache privé désactivé).
+
+Le Core gère l’invalidation de session dans `User::setRoles()` : l’administration
+ne doit pas incrémenter une deuxième fois la version de session.
+
+La configuration globale Open Demat, le thème, le logo et le choix d’authentification
+sont conservés. Les routes d’accueil propres à UPEC ne sont pas dupliquées.

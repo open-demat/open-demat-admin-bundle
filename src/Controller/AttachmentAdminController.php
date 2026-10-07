@@ -110,8 +110,8 @@ final class AttachmentAdminController extends AbstractController
             }
         });
 
-        $mime = $document->getMimeType() ?: 'application/octet-stream';
-        $response->headers->set('Content-Type', $mime);
+        // Client-provided MIME types must not render active content in the portal.
+        $response->headers->set('Content-Type', 'application/octet-stream');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
 
         $original = $document->getOriginalName() ?: 'document';
@@ -120,11 +120,13 @@ final class AttachmentAdminController extends AbstractController
         $response->headers->set(
             'Content-Disposition',
             $response->headers->makeDisposition(
-                ResponseHeaderBag::DISPOSITION_INLINE,
+                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
                 $original,
                 $fallback
             )
         );
+
+        $response->headers->set('Cache-Control', 'private, no-store');
 
         return $response;
     }

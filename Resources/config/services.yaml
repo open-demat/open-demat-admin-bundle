@@ -6,7 +6,7 @@ services:
 
   OpenDemat\AdminBundle\:
     resource: '../../src/*'
-    exclude: '../../src/{DependencyInjection,AdminBundle.php}'
+    exclude: '../../src/{DependencyInjection,Tests,tests,AdminBundle.php}'
 
   OpenDemat\AdminBundle\Twig\AdminOrganizationExtension:
     arguments:

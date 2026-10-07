@@ -5,202 +5,392 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-      .admin-home {
-        max-width: 1200px;
+      .admin-dashboard {
+        --admin-accent: var(--open-demat-red, #e42535);
+        --admin-accent-dark: var(--open-demat-red-dark, #b51e2a);
+        --admin-ink: #1f2937;
+        --admin-soft: #f7f7f8;
+        max-width: 1240px;
+        margin-inline: auto;
       }
-      .admin-home-header {
+
+      .admin-hero {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 2rem;
+        padding: clamp(1.5rem, 3vw, 2.5rem);
+        color: #fff;
+        background:
+          radial-gradient(circle at 85% 15%, rgba(255,255,255,.18), transparent 27%),
+          linear-gradient(135deg, var(--admin-accent-dark), var(--admin-accent));
+        border-radius: 1.25rem;
+        box-shadow: 0 16px 40px rgba(181, 30, 42, .18);
+      }
+
+      .admin-hero::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        width: 15rem;
+        height: 15rem;
+        right: -5rem;
+        bottom: -8rem;
+        border: 2.5rem solid rgba(255,255,255,.08);
+        border-radius: 50%;
+      }
+
+      .admin-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        margin-bottom: .75rem;
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.82);
+      }
+
+      .admin-hero h1 {
+        margin: 0;
+        max-width: 18ch;
+        font-size: clamp(1.65rem, 3vw, 2.4rem);
+        line-height: 1.15;
+        letter-spacing: -.025em;
+      }
+
+      .admin-hero-description {
+        max-width: 58ch;
+        margin: .75rem 0 0;
+        color: rgba(255,255,255,.84);
+      }
+
+      .admin-profile-panel {
+        min-width: 250px;
+        padding: 1rem 1.1rem;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.24);
+        border-radius: 1rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .admin-profile-label {
+        margin-bottom: .2rem;
+        font-size: .75rem;
+        color: rgba(255,255,255,.72);
+      }
+
+      .admin-profile-name {
         display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1.5rem;
+        align-items: center;
+        gap: .5rem;
+        min-width: 0;
+        font-weight: 700;
       }
-      .admin-home-icon {
+
+      .admin-profile-name span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .admin-environment {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        margin-top: .8rem;
+        padding-top: .8rem;
+        border-top: 1px solid rgba(255,255,255,.2);
+        font-size: .8rem;
+        color: rgba(255,255,255,.84);
+      }
+
+      .admin-status-dot {
+        width: .55rem;
+        height: .55rem;
+        flex: 0 0 auto;
+        background: #5ee49b;
+        border: 2px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        box-shadow: 0 0 0 .2rem rgba(94, 228, 155, .12);
+      }
+
+      .admin-section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 2rem 0 1rem;
+      }
+
+      .admin-section-heading h2 {
+        margin: 0 0 .25rem;
+        color: var(--admin-ink);
+        font-size: 1.25rem;
+        font-weight: 700;
+      }
+
+      .admin-section-heading p {
+        margin: 0;
+        color: var(--muted, #5b5b5b);
+        font-size: .9rem;
+      }
+
+      .admin-module-count {
+        flex: 0 0 auto;
+        padding: .4rem .7rem;
+        color: var(--admin-accent-dark);
+        background: color-mix(in srgb, var(--admin-accent) 8%, #fff);
+        border: 1px solid color-mix(in srgb, var(--admin-accent) 20%, #fff);
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 700;
+      }
+
+      .admin-modules {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .admin-module {
+        min-width: 0;
+      }
+
+      .admin-module-link {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 1rem;
+        height: 100%;
+        padding: 1.25rem;
+        color: var(--admin-ink);
+        text-decoration: none;
+        background: #fff;
+        border: 1px solid var(--border, #e5e5e5);
+        border-radius: 1rem;
+        box-shadow: 0 3px 14px rgba(17, 24, 39, .05);
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      }
+
+      .admin-module-link::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--module-color, var(--admin-accent));
+        opacity: 0;
+        transition: opacity .18s ease;
+      }
+
+      .admin-module-link:hover {
+        color: var(--admin-ink);
+        border-color: color-mix(in srgb, var(--module-color, var(--admin-accent)) 35%, #fff);
+        box-shadow: 0 12px 28px rgba(17, 24, 39, .1);
+        transform: translateY(-3px);
+      }
+
+      .admin-module-link:hover::before,
+      .admin-module-link:focus-visible::before {
+        opacity: 1;
+      }
+
+      .admin-module-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--open-demat-red) 10%, transparent);
-        font-size: 1.4rem;
+        width: 3.25rem;
+        height: 3.25rem;
+        flex: 0 0 auto;
+        color: var(--module-color, var(--admin-accent));
+        background: color-mix(in srgb, var(--module-color, var(--admin-accent)) 10%, #fff);
+        border-radius: .9rem;
+        font-size: 1.55rem;
       }
-      .admin-home-meta {
-        min-width: 220px;
+
+      .admin-module-copy {
+        min-width: 0;
       }
-      .admin-badge-env {
+
+      .admin-module-copy h3 {
+        margin: 0 0 .3rem;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .admin-module-copy p {
+        display: -webkit-box;
+        overflow: hidden;
+        margin: 0;
+        color: var(--muted, #5b5b5b);
+        font-size: .86rem;
+        line-height: 1.5;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      .admin-module-arrow {
         display: inline-flex;
         align-items: center;
-        gap: .4rem;
-        padding: .35rem .6rem;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--open-demat-red) 8%, transparent);
-        font-size: .8rem;
-        margin-bottom: .4rem;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 auto;
+        color: var(--module-color, var(--admin-accent));
+        background: var(--admin-soft);
+        border-radius: 50%;
+        font-size: 1.15rem;
+        transition: transform .18s ease, background-color .18s ease;
       }
-      .admin-badge-env .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: #22c55e;
+
+      .admin-module-link:hover .admin-module-arrow {
+        background: color-mix(in srgb, var(--module-color, var(--admin-accent)) 10%, #fff);
+        transform: translateX(3px);
       }
-      .admin-app-card {
-        position: relative;
-        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+
+      @media (max-width: 991.98px) {
+        .admin-hero {
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+        }
+
+        .admin-hero h1 {
+          max-width: none;
+        }
+
+        .admin-profile-panel {
+          min-width: 0;
+        }
       }
-      .admin-app-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 18px rgba(0,0,0,.08);
-        border-color: color-mix(in srgb, var(--open-demat-red) 45%, var(--border) 55%);
-      }
-      @media (max-width: 767.98px) {
-        .admin-home-header {
-          flex-direction: column;
+
+      @media (max-width: 679.98px) {
+        .admin-modules {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-section-heading {
           align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 419.98px) {
+        .admin-hero {
+          padding: 1.25rem;
+          border-radius: 1rem;
+        }
+
+        .admin-module-link {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .admin-module-arrow {
+          display: none;
         }
       }
     </style>
 {% endblock %}
 
 {% block body %}
-{% set orgName = open_demat_admin_organization_name|default(organization_name|default('Open Demat')) %}
-{% set orgLogo = open_demat_admin_organization_logo|default(organization_logo|default('assets/img/open-demat-logo.png')) %}
-{% set phpEnvironment = app.request.server.get('APP_ENV')|default(app.environment|default('dev')) %}
-<div class="container-fluid admin-home">
+  {% set adminModules = [
+    {
+      title: 'Gestion des utilisateurs',
+      description: 'Consulter les comptes, modifier les rôles et administrer les accès.',
+      route: 'open_demat_admin_user_index',
+      icon: 'bx-user',
+      color: '#2563eb'
+    },
+    {
+      title: 'Pièces jointes',
+      description: 'Visualiser, renommer et remplacer les documents associés aux processus.',
+      route: 'open_demat_admin_attachment_index',
+      icon: 'bx-paperclip',
+      color: '#7c3aed'
+    },
+    {
+      title: 'Référentiels',
+      description: 'Gérer les codes, libellés et statuts des référentiels disponibles.',
+      route: 'open_demat_admin_referentiels_index',
+      icon: 'bx-data',
+      color: '#0f766e'
+    },
+    {
+      title: 'Process',
+      description: 'Administrer les dossiers des applications depuis une interface centralisée.',
+      route: 'open_demat_admin_process_index',
+      icon: 'bx-git-branch',
+      color: '#c2410c'
+    },
+    {
+      title: 'Configuration globale',
+      description: 'Configurer l’organisation, l’authentification, le mail et le stockage.',
+      route: 'open_demat_admin_configuration',
+      icon: 'bx-cog',
+      color: '#475569'
+    }
+  ] %}
 
-    <!-- HEADER -->
-    <header class="admin-home-header mb-4">
-        <div>
-            <h1 class="page-title mb-1 d-flex align-items-center gap-2">
-                <span class="admin-home-icon">
-                    {% if orgLogo %}
-                        <img src="{{ asset(orgLogo) }}" alt="" style="max-width: 26px; max-height: 26px; object-fit: contain;">
-                    {% else %}
-                        <i class="bx bx-cog" aria-hidden="true"></i>
-                    {% endif %}
-                </span>
-                <span>Panneau d'administration</span>
-            </h1>
+  <div class="admin-dashboard">
+    <header class="admin-hero">
+      <div>
+        <div class="admin-eyebrow">
+          <i class="bx bx-shield-quarter" aria-hidden="true"></i>
+          Espace sécurisé
         </div>
+        <h1>Panneau d’administration</h1>
+        <p class="admin-hero-description">
+          Pilotez les utilisateurs, les données et les contenus de la plateforme depuis un espace unique.
+        </p>
+      </div>
 
-        <div class="admin-home-meta text-end">
-            <div class="admin-badge-env">
-                <span class="dot"></span>
-                <span>Environnement : <strong>{{ phpEnvironment|capitalize }}</strong></span>
-            </div>
-            <p class="small text-muted mb-0">
-                Connecté en tant que<br>
-                <strong>{{ app.user.username ?? 'Compte administrateur' }}</strong>
-            </p>
+      <aside class="admin-profile-panel" aria-label="Contexte de connexion">
+        <div class="admin-profile-label">Connecté en tant que</div>
+        <div class="admin-profile-name">
+          <i class="bx bxs-user-circle fs-4" aria-hidden="true"></i>
+          <span>{{ app.user.userIdentifier ?? app.user.username ?? 'Compte administrateur' }}</span>
         </div>
+        <div class="admin-environment">
+          <span class="admin-status-dot" aria-hidden="true"></span>
+          Environnement&nbsp;: <strong>{{ app.environment|capitalize }}</strong>
+        </div>
+      </aside>
     </header>
 
-    <!-- SECTION APPS -->
-    <section aria-labelledby="admin-apps-title">
-        <div class="d-flex align-items-baseline justify-content-between mb-2 flex-wrap gap-2">
-            <div>
-                <h2 id="admin-apps-title" class="h5 mb-1">Applications d’administration</h2>
-                <p class="small text-muted mb-0">
-                    Accédez aux modules disponibles.
-                </p>
-            </div>
+    <section aria-labelledby="admin-modules-title">
+      <div class="admin-section-heading">
+        <div>
+          <h2 id="admin-modules-title">Outils d’administration</h2>
+          <p>Sélectionnez un module pour commencer.</p>
         </div>
+        <span class="admin-module-count">{{ adminModules|length }} modules</span>
+      </div>
 
-        <div class="row g-4">
+      <div class="admin-modules">
+        {% for module in adminModules %}
+          <article class="admin-module" style="--module-color: {{ module.color }}">
+            <a href="{{ path(module.route) }}" class="admin-module-link">
+              <span class="admin-module-icon" aria-hidden="true">
+                <i class="bx {{ module.icon }}"></i>
+              </span>
 
-            <!-- Gestion des utilisateurs -->
-            <div class="col-sm-6 col-lg-4">
-                <a href="{{ path('open_demat_admin_user_index') }}" class="text-decoration-none d-block h-100">
-                    <div class="app-card admin-app-card h-100">
-                        <div class="app-icon">👤</div>
+              <span class="admin-module-copy">
+                <h3>{{ module.title }}</h3>
+                <p>{{ module.description }}</p>
+              </span>
 
-                        <div>
-                            <h3>Gestion des utilisateurs</h3>
-                            <p>Consulter les comptes, modifier les rôles et administrer les accès {{ orgName }}.</p>
-                        </div>
-
-                        <span class="btn-open-demat mt-2">Accéder</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Administration des documents -->
-            <div class="col-sm-6 col-lg-4">
-                <a href="{{ path('open_demat_admin_attachment_index') }}" class="text-decoration-none d-block h-100">
-                    <div class="app-card admin-app-card h-100">
-                        <div class="app-icon">📎</div>
-
-                        <div>
-                            <h3>Pièces jointes</h3>
-                            <p>
-                                Visualiser, renommer et remplacer les fichiers associés aux processus
-                                (documents stockés, métadonnées, auteurs).
-                            </p>
-                        </div>
-
-                        <span class="btn-open-demat mt-2">Accéder</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Référentiels -->
-            <div class="col-sm-6 col-lg-4">
-                <a href="{{ path('open_demat_admin_referentiels_index') }}" class="text-decoration-none d-block h-100">
-                    <div class="app-card admin-app-card h-100">
-                        <div class="app-icon">📚</div>
-
-                        <div>
-                            <h3>Référentiels</h3>
-                            <p>
-                                Gérer les référentiels (code/libellé/actif) détectés automatiquement
-                                par Doctrine, avec CRUD générique.
-                            </p>
-                        </div>
-
-                        <span class="btn-open-demat mt-2">Accéder</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Process (cases) -->
-            <div class="col-sm-6 col-lg-4">
-                <a href="{{ path('open_demat_admin_process_index') }}" class="text-decoration-none d-block h-100">
-                    <div class="app-card admin-app-card h-100">
-                        <div class="app-icon">🗂️</div>
-
-                        <div>
-                            <h3>Process</h3>
-                            <p>
-                                Accéder aux dossiers (cases) des applications : liste, création, édition et suppression
-                                via CRUD centralisé.
-                            </p>
-                        </div>
-
-                        <span class="btn-open-demat mt-2">Accéder</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Configuration globale -->
-            <div class="col-sm-6 col-lg-4">
-                <a href="{{ path('open_demat_admin_configuration') }}" class="text-decoration-none d-block h-100">
-                    <div class="app-card admin-app-card h-100">
-                        <div class="app-icon">⚙️</div>
-
-                        <div>
-                            <h3>Configuration globale</h3>
-                            <p>
-                                Consulter et modifier les paramètres Organisation, CAS et S3 utilisés par la
-                                plateforme.
-                            </p>
-                        </div>
-
-                        <span class="btn-open-demat mt-2">Accéder</span>
-                    </div>
-                </a>
-            </div>
-
-        </div>
+              <span class="admin-module-arrow" aria-hidden="true">
+                <i class="bx bx-right-arrow-alt"></i>
+              </span>
+            </a>
+          </article>
+        {% endfor %}
+      </div>
     </section>
-
-</div>
+  </div>
 {% endblock %}

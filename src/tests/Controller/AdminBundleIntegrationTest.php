@@ -16,12 +16,22 @@ final class AdminBundleIntegrationTest extends WebTestCase
         return static::getContainer()->get('doctrine')->getManager();
     }
 
+    private function assertRedirectsToLoginChoice(): void
+    {
+        $this->assertResponseStatusCodeSame(302);
+
+        $location = static::getClient()->getResponse()->headers->get('Location');
+
+        $this->assertNotNull($location);
+        $this->assertStringStartsWith('/login?_target_path=', $location);
+    }
+
     public function test_admin_dashboard_requires_authentication(): void
     {
         $client = static::createClient();
         $client->request('GET', '/admin/');
 
-        $this->assertResponseRedirects('/cas/login');
+        $this->assertRedirectsToLoginChoice();
     }
 
     public function test_admin_dashboard_forbidden_without_role_admin(): void
@@ -69,7 +79,7 @@ final class AdminBundleIntegrationTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/admin/process/');
 
-        $this->assertResponseRedirects('/cas/login');
+        $this->assertRedirectsToLoginChoice();
     }
 
     public function test_process_index_forbidden_without_role_admin(): void
@@ -103,7 +113,7 @@ final class AdminBundleIntegrationTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/admin/referentiels/');
 
-        $this->assertResponseRedirects('/cas/login');
+        $this->assertRedirectsToLoginChoice();
     }
 
     public function test_referentiels_index_forbidden_without_role_admin(): void
@@ -137,7 +147,7 @@ final class AdminBundleIntegrationTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/admin/attachments/document/1');
 
-        $this->assertResponseRedirects('/cas/login');
+        $this->assertRedirectsToLoginChoice();
     }
 
     public function test_document_view_forbidden_without_role_admin(): void
@@ -210,7 +220,7 @@ final class AdminBundleIntegrationTest extends WebTestCase
         $client = static::createClient();
         $client->request('POST', '/admin/users/create');
 
-        $this->assertResponseRedirects('/cas/login');
+        $this->assertRedirectsToLoginChoice();
     }
 
     public function test_user_delete_prevents_self_delete(): void
@@ -238,6 +248,31 @@ final class AdminBundleIntegrationTest extends WebTestCase
         $stillExists = $em->getRepository(User::class)->find($user->getId());
 
         $this->assertNotNull($stillExists);
+    }
+
+    public function test_role_update_increments_session_version_once(): void
+    {
+        $client = static::createClient();
+        $em = $this->em();
+        $admin = TestUserFactory::createUser($em, 'roles-admin', ['ROLE_ADMIN']);
+        $user = TestUserFactory::createUser($em, 'roles-target', ['ROLE_USER']);
+        $id = $user->getId();
+        $before = $user->getSessionVersion();
+        $client->loginUser($admin, 'main');
+        $crawler = $client->request('GET', '/admin/users/');
+        $this->assertResponseIsSuccessful();
+        $token = $crawler->filter('#editRolesModal-'.$id.' input[name="_token"]')->attr('value');
+
+        $client->request('POST', '/admin/users/'.$id.'/roles', [
+            '_token' => $token,
+            'roles' => ['ROLE_USER', 'ROLE_ADMIN'],
+        ]);
+        $this->assertResponseRedirects('/admin/users/');
+        $em = $this->em();
+        $em->clear();
+        $updated = $em->find(User::class, $id);
+        $this->assertContains('ROLE_ADMIN', $updated->getRoles());
+        $this->assertSame($before + 1, $updated->getSessionVersion());
     }
 
     private function extractDeleteTokenForUser(string $html, int $userId): string

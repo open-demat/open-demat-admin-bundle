@@ -44,6 +44,14 @@
     }
     .badge-role .badge-x:hover { opacity: 1; }
 
+    .badge-account-type {
+      font-size: .75rem;
+      border-radius: 999px;
+      padding: .35rem .6rem;
+      font-weight: 700;
+      letter-spacing: .01em;
+    }
+
     [data-role^="ROLE_ADMIN"] {
       background-color: rgba(228,37,53,.06);
       border-color: rgba(228,37,53,.4);
@@ -69,6 +77,11 @@
       letter-spacing: .04em;
       color: #6c757d;
       border-bottom-width: 1px;
+    }
+
+    .js-sort {
+      cursor: pointer;
+      user-select: none;
     }
 
     .user-identifier { font-weight: 600; }
@@ -101,7 +114,7 @@
 {# -------- Build map "appRoles" from availableRoles -------- #}
 {% set appRoles = {} %}
 {% for r in availableRoles %}
-  {% if r matches '/^ROLE_[A-Z0-9]+_[A-Z0-9_]+$/' and r not in ['ROLE_USER','ROLE_ADMIN'] %}
+  {% if r matches '/^ROLE_[A-Z0-9-]+_[A-Z0-9_]+$/' and r not in ['ROLE_USER','ROLE_ADMIN'] %}
     {% set parts = r|split('_') %}
     {% if parts|length >= 3 %}
       {% set appKey = parts[1] %}
@@ -138,23 +151,10 @@
       </div>
     </div>
 
-    {# Toolbar : recherche + création + suppression multiple #}
+    {# Toolbar : création + suppression multiple #}
     <div class="admin-users-toolbar">
-      <div class="d-flex align-items-center gap-2">
-        <form method="get" class="d-flex gap-2">
-          <input
-            type="search"
-            name="q"
-            value="{{ app.request.query.get('q') }}"
-            class="form-control form-control-sm"
-            placeholder="Rechercher un utilisateur…"
-            aria-label="Rechercher par identifiant ou email"
-          >
-          <button class="btn btn-sm btn-outline-secondary" type="submit">
-            <i class="bx bx-search" aria-hidden="true"></i>
-            <span class="d-none d-sm-inline">Rechercher</span>
-          </button>
-        </form>
+      <div class="text-muted small">
+        Filtrez, triez et paginez la liste avec les outils ci-dessous.
       </div>
 
       <div class="d-flex gap-2">
@@ -194,35 +194,111 @@
       {% endfor %}
     {% endfor %}
 
-    <div class="table-responsive shadow-sm bg-white rounded-3">
+    {% include '_partials/_list_table_tools.html.twig' with {
+      uid: 'admin_users',
+      search_placeholder: 'Identifiant, email, rôle…',
+      filter_label_selector: true,
+      filters: [
+        ['ALL', 'Tous', 'btn-outline-secondary'],
+        ['ADMIN', 'Admins', 'btn-outline-danger'],
+        ['ETUDIANT', 'Étudiants', 'btn-outline-success'],
+        ['INVITE', 'Invités', 'btn-outline-warning'],
+        ['USER', 'Users', 'btn-outline-primary'],
+        ['OTHER', 'Autres', 'btn-outline-info'],
+        ['NONE', 'Sans rôle', 'btn-outline-secondary']
+      ],
+      config: {
+        items: '.js-list-item',
+        tableWrap: '#adminUsersTableWrap',
+        emptyState: '#adminUsersEmptyState',
+        search: {
+          input: '#adminUsersSearch',
+          fieldsAttr: 'data-search'
+        },
+        filter: {
+          attr: 'data-status',
+          buttons: '.js-filter-btn',
+          label: '.js-filter-label',
+          countSpans: '.js-count',
+          default: 'ALL'
+        },
+        sort: {
+          headers: '.js-sort',
+          defaultKey: 'username',
+          defaultDir: 'asc'
+        }
+      },
+      wrapper_id: 'adminUsersTools',
+      search_id: 'adminUsersSearch'
+    } %}
+
+    <div id="adminUsersEmptyState" class="d-none text-center text-muted py-4 bg-white border rounded-3 mb-3">
+      Aucun utilisateur ne correspond à la recherche ou au filtre actif.
+    </div>
+
+    <div class="table-responsive shadow-sm bg-white rounded-3" id="adminUsersTableWrap">
       {# ✅ Bulk delete form (seul form autour du tableau) #}
       <form method="post" action="{{ path('open_demat_admin_user_delete_bulk') }}" id="bulk-delete-form">
         <input type="hidden" name="_token" value="{{ csrf_token('delete_users_bulk') }}">
 
         <table class="table table-hover table-sm mb-0 align-middle">
-          <thead>
+          <thead class="table-light">
           <tr>
             <th style="width: 32px;">
               <input type="checkbox" id="select-all" class="form-check-input" aria-label="Tout sélectionner">
             </th>
-            <th style="width: 60px;">#</th>
-            <th>Utilisateur</th>
-            <th>Email</th>
-            <th style="width: 30%;">Rôles</th>
+            <th class="js-sort" data-sort-key="id" data-sort-type="number" style="width: 70px;">#</th>
+            <th class="js-sort" data-sort-key="username" data-sort-type="text">Utilisateur</th>
+            <th class="js-sort" data-sort-key="email" data-sort-type="text">Email</th>
+            <th class="js-sort" data-sort-key="type" data-sort-type="text" style="width: 150px;">Type</th>
+            <th class="js-sort" data-sort-key="roles" data-sort-type="text" style="width: 30%;">Rôles</th>
             <th class="text-end" style="width: 200px;">Actions</th>
           </tr>
           </thead>
 
           <tbody>
           {% for user in users %}
-            <tr>
+            {% set username = user.username ?? user.userIdentifier %}
+            {% set email = user.email ?? '' %}
+            {% set roles = user.roles|default([]) %}
+            {% set accountType =
+              'ROLE_ADMIN' in roles ? 'ADMIN' :
+              ('ROLE_ETUDIANT' in roles ? 'ETUDIANT' :
+              ('ROLE_INVITE' in roles ? 'INVITE' :
+              ('ROLE_USER' in roles ? 'USER' :
+              (roles is not empty ? 'OTHER' : 'NONE'))))
+            %}
+            {% set accountTypeLabel =
+              accountType == 'ADMIN' ? 'Admin' :
+              (accountType == 'ETUDIANT' ? 'Étudiant' :
+              (accountType == 'INVITE' ? 'Invité' :
+              (accountType == 'USER' ? 'User' :
+              (accountType == 'OTHER' ? 'Autre' : 'Sans rôle'))))
+            %}
+            {% set accountTypeClass =
+              accountType == 'ADMIN' ? 'text-bg-danger' :
+              (accountType == 'ETUDIANT' ? 'text-bg-success' :
+              (accountType == 'INVITE' ? 'text-bg-warning' :
+              (accountType == 'USER' ? 'text-bg-primary' :
+              (accountType == 'OTHER' ? 'text-bg-info' : 'text-bg-secondary'))))
+            %}
+            <tr
+              class="js-list-item"
+              data-status="{{ accountType }}"
+              data-search="{{ user.id }} {{ username }} {{ email }} {{ accountTypeLabel }} {{ roles|join(' ') }}"
+              data-sort-id="{{ user.id }}"
+              data-sort-username="{{ username }}"
+              data-sort-email="{{ email }}"
+              data-sort-type="{{ accountTypeLabel }}"
+              data-sort-roles="{{ roles|join(' ') }}"
+            >
               <td>
                 <input
                   type="checkbox"
                   class="form-check-input user-checkbox"
                   name="ids[]"
                   value="{{ user.id }}"
-                  aria-label="Sélectionner l’utilisateur {{ user.username ?? user.userIdentifier }}"
+                  aria-label="Sélectionner l’utilisateur {{ username }}"
                 >
               </td>
 
@@ -230,22 +306,28 @@
 
               <td>
                 <div class="user-identifier">
-                  {{ user.username ?? user.userIdentifier }}
+                  {{ username }}
                 </div>
               </td>
 
               <td>
-                {% if user.email %}
-                  <span class="user-email">{{ user.email }}</span>
+                {% if email %}
+                  <span class="user-email">{{ email }}</span>
                 {% else %}
                   <span class="text-muted fst-italic">Non renseigné</span>
                 {% endif %}
               </td>
 
               <td>
-                {% if user.roles is not empty %}
+                <span class="badge badge-account-type {{ accountTypeClass }}">
+                  {{ accountTypeLabel }}
+                </span>
+              </td>
+
+              <td>
+                {% if roles is not empty %}
                   <div class="d-flex flex-wrap gap-1">
-                    {% for role in user.roles %}
+                    {% for role in roles %}
                       <span class="badge badge-role" data-role="{{ role }}" title="{{ role }}">
                         {{ role|replace({'ROLE_':''})|lower|title }}
                       </span>
@@ -281,7 +363,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="6" class="text-center text-muted py-4">
+              <td colspan="7" class="text-center text-muted py-4">
                 Aucun utilisateur trouvé.
               </td>
             </tr>

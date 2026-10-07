@@ -151,7 +151,6 @@ final class UserAdminController extends AbstractController
         }
 
         $user->setRoles($roles);
-        $user->bumpSessionVersion();
 
         $em->flush();
 
